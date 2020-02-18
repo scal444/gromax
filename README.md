@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/scal444/gromax.svg?branch=master)](https://travis-ci.org/scal444/gromax)
+[![codecov](https://codecov.io/gh/scal444/gromax/branch/master/graph/badge.svg)](https://codecov.io/gh/scal444/gromax)
+
 # Gromax
 Gromax is a tool to help optimize GROMACS performance on any hardware, particuarly useful for working with GPUs.
 
