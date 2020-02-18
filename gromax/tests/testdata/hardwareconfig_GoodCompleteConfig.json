@@ -1,0 +1,19 @@
+{
+  "hardware_config": {
+    "gpu_ids": [
+      0,
+      1
+    ],
+    "cpu_ids": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  "some_other_param": [
+    1,
+    2,
+    3
+  ]
+}

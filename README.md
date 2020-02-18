@@ -1,0 +1,30 @@
+# Gromax
+Gromax is a tool to help optimize GROMACS performance on any hardware, particuarly useful for working with GPUs.
+
+
+---------------------------
+
+Today's molecular simulation engines are complicated. To get the most performance out of Gromacs and other packages,
+there are a large number of simulation parameters that need to be considered and tweaked. With the incorporation of
+GPUs this problem becomes even more complicated. Gromax is here to help.
+
+
+
+## Current Capabilities
+- Given a Gromacs TPR file and a description of the hardware (CPU count and GPU IDs), generate a series of Gromacs run
+  commands to explore which parameters provide the best performance for the hardware.
+- Break down the available hardware into subcomponents to assess maximum throughput on a single node.
+- Generate a simple bash script to execute
+- See the examples section in the documentation
+
+## Future additions
+- A log parser to help get benchmarking data into a format suitable for analysis
+- A run executor to automate the benchmarking process.
+
+## Long-term directions
+- Support for other simulation suites
+
+## Other awesome resources
+- Want to see how well your system scales to various clusters? Check out
+ [MDBenchmark](https://github.com/bio-phys/mdbenchmark)!
+ 
