@@ -1,5 +1,4 @@
-import json
-from gromax.utils import fatal_error
+import gromax.utils as utils
 from copy import deepcopy
 
 
@@ -17,14 +16,8 @@ class HardwareConfig(object):
             # TODO update this all - config file should be able to specify num_cpus, cpu_offset, cpu_stride,
             # OR have cpu_ids, but the data structure should just have cpu_ids
     """
-    pass
 
-    def __init__(self, file=None, cpu_ids=None, gpu_ids=None):
-        if file:
-            if cpu_ids or gpu_ids:
-                fatal_error("Cannot provide configuration file AND manual specification of properties")
-            self.loadFromConfigFile(file)
-            return
+    def __init__(self, cpu_ids=None, gpu_ids=None):
         if cpu_ids:
             self.cpu_ids = cpu_ids
         else:
@@ -33,43 +26,6 @@ class HardwareConfig(object):
             self.gpu_ids = gpu_ids
         else:
             self.gpu_ids = []
-
-    # FIXME Figure out json load vs loads and what we want
-    def loadFromConfigFile(self, file):
-        # TODO handle failure to load json
-        # TODO add note if ids and num_cpus clash, but work from info from ids
-        try:
-            with open(file, 'rt') as fin:
-                try:
-                    raw_config = json.load(fin)
-                except Exception:
-                    # TODO more specific error, catch correct exception
-                    fatal_error("Failed to parse json file")
-
-                # can load hardware config from file, or entire run specification. If the latter, search for hardware
-                # config and discard the rest
-                # TODO if we load from config this leads to multiple openings of the file
-                if "hardware_config" in raw_config.keys():
-                    raw_config = raw_config["hardware_config"]
-
-                self.cpu_ids = raw_config.get("cpu_ids", [])
-                if not self.cpu_ids:
-                    try:
-                        # without a specific cpu_ids input, we start them from 0
-                        # Note that this modifies the state of the configuration, in that savetofile(loadfromfile())
-                        # will not yield the original file
-                        self.cpu_ids = list(range(raw_config["num_processors"]))
-                    except KeyError:
-                        fatal_error("Configuration file did not provide either a list of processor ids (with key "
-                                    "'cpu_ids'), or a number of processors (with key 'num_processors')")
-
-                assert len(self.cpu_ids) == self.num_cpus, "num cpus: {}, len(cpu_ids): {}".format(
-                    self.num_cpus, len(self.cpu_ids))
-
-                self.gpu_ids = raw_config.get("gpu_ids", [])
-        except Exception:
-            # TODO be specific
-            fatal_error("Failed to open config file {}".format(file))
 
     @property
     def num_cpus(self):
@@ -94,14 +50,15 @@ class HardwareConfig(object):
 
     @gpu_ids.setter
     def gpu_ids(self, gpu_ids):
-        if not isinstance(gpu_ids, list):
-            fatal_error("gpu_ids paramater must be a list")
-        for item in gpu_ids:
-            if not isinstance(item, int):
-                fatal_error("All gpu ids must be integers - {} is not an integer".format(item))
-            if item < 0:
-                fatal_error("Cannot have a negative GPU ID")
-        self._gpu_ids = gpu_ids
+        try:
+            for item in gpu_ids:
+                if not isinstance(item, int):
+                    utils.fatal_error("All gpu ids must be integers: {} is not an int".format(item))
+                if item < 0:
+                    utils.fatal_error("Cannot have a negative GPU ID")
+            self._gpu_ids = gpu_ids
+        except TypeError:
+            utils.fatal_error("gpu_ids paramater must be iterable")
 
     def __str__(self):
         return "\nHardware config:\n\tcpu IDs : {}\n\tgpu IDs : {}".format(self._cpu_ids, self._gpu_ids)
@@ -126,10 +83,10 @@ def checkProcessorIDContent(cpu_ids):
         3. The stride between integers is consistent
     """
     if not isinstance(cpu_ids, list):
-        fatal_error("Expected a list for parameter 'cpu_ids'")
+        utils.fatal_error("Expected a list for parameter 'cpu_ids'")
 
     if not all([isinstance(i, int) and i >= 0 for i in cpu_ids]):
-        fatal_error("Not all values in 'cpu_ids' are ints")
+        utils.fatal_error("Not all values in 'cpu_ids' are ints")
 
     # case of empty list
     if not cpu_ids:
@@ -140,5 +97,5 @@ def checkProcessorIDContent(cpu_ids):
 
         for i, val in enumerate(cpu_ids[:-1]):
             if (cpu_ids[i+1] - val) != diff:
-                fatal_error("Inconsistent stride between cpu ids")
+                utils.fatal_error("Inconsistent stride between cpu ids")
     return True

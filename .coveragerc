@@ -2,6 +2,7 @@
 source = gromax
 omit =
     gromax/tests/*
+    gromax/testutils.py
 [report]
 exclude_lines =
     raise NotImplementedError

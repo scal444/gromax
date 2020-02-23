@@ -4,7 +4,7 @@ import gromax.testutils as testutils
 import unittest
 import gromax.utils as utils
 from gromax.testutils import get_relative_path
-# from unittest import mock
+from unittest import mock
 
 
 class FatalErrorTests(unittest.TestCase):
@@ -74,33 +74,20 @@ class OpenOrDieTests(unittest.TestCase):
         expected_result = "Path specified is a directory, not a file. Path in question: {}".format(file)
         self.assertEqual(str(self.stderr), expected_result)
 
-    '''
-    I'm having issues with mocking the exceptions - need to read the documentation on mock_open() - which is an actual
-    mock construct - I may be referring to mock_open without having defined it or something
-
-    @mock.patch('__main__.open')
-    def testPermissionErrorRead(self, mock_open):
-        mock_open.side_effect = PermissionError
+    def testPermissionErrorRead(self):
         file = get_relative_path("testdata/existing_file.txt")
         mode = "rt"
-        with self.assertRaises(SystemExit):
-            utils.openOrDie(file, mode)
-        self.assertEqual(str(self.stderr), "You lack read permissions for file {}".format(file))
+        with mock.patch("builtins.open", mock.mock_open()) as mock_file:
+            mock_file.side_effect = PermissionError()
+            with self.assertRaises(SystemExit):
+                utils.openOrDie(file, mode)
+            self.assertEqual(str(self.stderr), "You lack read permissions for file {}".format(file))
 
-    @mock.patch('__main__.open')
-    def testPermissionErrorWrite(self, mock_open):
-        mock_open.side_effect = PermissionError
+    def testPermissionErrorWrite(self):
         file = get_relative_path("testdata/existing_file.txt")
         mode = "wt"
-        with self.assertRaises(SystemExit):
-            utils.openOrDie(file, mode)
-        self.assertEqual(str(self.stderr), "You lack write permissions for file {}".format(file))
-
-    @mock.patch('__main__.open')
-    def testGeneralException(self, mock_open):
-        mock_open.side_effect = Exception
-        file = get_relative_path("testdata/existing_file.txt")
-        mode = "r"
-        with self.assertRaises(SystemExit):
-            utils.openOrDie(file, mode)
-    '''
+        with mock.patch("builtins.open", mock.mock_open()) as mock_file:
+            mock_file.side_effect = PermissionError()
+            with self.assertRaises(SystemExit):
+                utils.openOrDie(file, mode)
+            self.assertEqual(str(self.stderr), "You lack write permissions for file {}".format(file))

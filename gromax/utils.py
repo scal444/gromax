@@ -28,7 +28,4 @@ def openOrDie(file, mode):
             attempt = "write"
         else:
             attempt = "read"
-
         fatal_error("You lack {} permissions for file {}".format(attempt, os.path.abspath(file)))
-    except Exception as e:
-        fatal_error("failed to open file {} - the following exception was thrown: {}".format(os.path.abspath(file), e))
