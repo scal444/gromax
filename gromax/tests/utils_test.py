@@ -43,8 +43,6 @@ class OpenOrDieTests(unittest.TestCase):
         self.assertIsNotNone(utils.openOrDie(file, mode))
 
     def testWriteGoodFile(self):
-        # TODO see if there's a more robust way to ensure we don't miss some cleanup, in all of these cases
-        # Will probably be in teardown
         file = get_relative_path("testdata/new_file.txt")
         mode = "xt"
         try:

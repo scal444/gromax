@@ -9,39 +9,37 @@ GpuIDs = List[int]
 
 class HardwareConfig(object):
     """
-        Attributes
-            _cpu_ids  - integer IDs, evenly strided. Most will start at 0 and have stride 1
-            _gpu_ids  - integer IDs. These have no restrictions besides being real numbers
+        Representation of the available hardware. This may represent all or part of a system.
 
-            The CPU attributes need either one or the other. If num_cpus is assigned without cpu_ids, the
-            the cpu_ids will be set starting from zero
+        Attributes:
+            cpu_ids: List of integers of CPU IDs
+            gpu_ids: List of integers of GPU IDs
 
-            GPU IDs are not required, but if present require either num_cpus or cpu_ids
-
-            # TODO update this all - config file should be able to specify num_cpus, cpu_offset, cpu_stride,
-            # OR have cpu_ids, but the data structure should just have cpu_ids
+        Properties:
+            num_cpus: number of CPUs
+            num_gpus: number of GPUs
     """
 
-    def __init__(self, cpu_ids=None, gpu_ids=None):
+    def __init__(self, cpu_ids: List[int] = None, gpu_ids: List[int] = None):
         if cpu_ids:
-            self.cpu_ids = cpu_ids
+            self.cpu_ids: List[int] = cpu_ids
         else:
-            self.cpu_ids = []
+            self.cpu_ids: List[int] = []
         if gpu_ids:
-            self.gpu_ids = gpu_ids
+            self.gpu_ids: List[int] = gpu_ids
         else:
-            self.gpu_ids = []
+            self.gpu_ids: List[int] = []
 
     @property
-    def num_cpus(self):
+    def num_cpus(self) -> int:
         return len(self._cpu_ids)
 
     @property
-    def num_gpus(self):
+    def num_gpus(self) -> int:
         return len(self._gpu_ids)
 
     @property
-    def cpu_ids(self):
+    def cpu_ids(self) -> List[int]:
         return deepcopy(self._cpu_ids)
 
     @cpu_ids.setter
@@ -50,11 +48,11 @@ class HardwareConfig(object):
         self._cpu_ids = cpu_ids
 
     @property
-    def gpu_ids(self):
+    def gpu_ids(self) -> List[int]:
         return deepcopy(self._gpu_ids)
 
     @gpu_ids.setter
-    def gpu_ids(self, gpu_ids):
+    def gpu_ids(self, gpu_ids: List[int]):
         try:
             for item in gpu_ids:
                 if not isinstance(item, int):
@@ -65,27 +63,27 @@ class HardwareConfig(object):
         except TypeError:
             utils.fatal_error("gpu_ids paramater must be iterable")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "\nHardware config:\n\tcpu IDs : {}\n\tgpu IDs : {}".format(self._cpu_ids, self._gpu_ids)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         if not isinstance(other, HardwareConfig):
             return False
         return self.cpu_ids == other.cpu_ids and self.gpu_ids == other.gpu_ids
 
-    def __ne__(self, other):
+    def __ne__(self, other) -> bool:
         return not self.__eq__(other)
 
 
 def distributeGpuIdsToTasks(gpu_ids: GpuIDs, ntasks: int) -> List[GpuIDs]:
     """
-        Creates a list of lists of [[task 0 gpu ids][task 1 gpu ids]]
+        Creates a list of lists of [[task 0 gpu ids],[task 1 gpu ids]]
 
         There can be multiple gpu_ids assigned to a task, or the same GPU can be assigned
-        to multiple tasks, depending on the workload
+        to multiple tasks, depending on the workload.
     """
     if not isinstance(gpu_ids, list):
         raise TypeError("Gpu IDs must be a list - is {}".format(gpu_ids))
@@ -114,7 +112,7 @@ def distributeGpuIdsToTasks(gpu_ids: GpuIDs, ntasks: int) -> List[GpuIDs]:
 
 def generateConfigSplitOptions(hw_config: HardwareConfig) -> List[List[HardwareConfig]]:
     """
-        Hardware configs can be split for simultaneous simulations with the following constraints
+        Hardware configs can be split for simultaneous simulations with the following constraints:
 
         - Each split config must have the same number of cores
         - All cores must be used (could relax this in the future)
@@ -122,7 +120,9 @@ def generateConfigSplitOptions(hw_config: HardwareConfig) -> List[List[HardwareC
           constraint.
 
         Returns a list of lists of [ [configsplit1] [configsplit2] ... ]
-        where configsplit1 can be 1 or more hw_configs
+        where configsplit1 is a list of one or more hardware configs. The hardware parts in the components of
+        configsplit1 should add up to the entire config.
+
     """
     num_total_cpus: int = hw_config.num_cpus
     num_total_gpus: int = hw_config.num_gpus
@@ -144,7 +144,7 @@ def generateConfigSplitOptions(hw_config: HardwareConfig) -> List[List[HardwareC
         config_set: List[HardwareConfig] = []
         gpu_id_assignments: List[List[int]] = distributeGpuIdsToTasks(hw_config.gpu_ids, sims_in_set)
         for i, gpu_assignment in enumerate(gpu_id_assignments):
-            config = HardwareConfig()
+            config: HardwareConfig = HardwareConfig()
             config.cpu_ids = hw_config.cpu_ids[i * cpus_per_sim: (i + 1) * cpus_per_sim]
             config.gpu_ids = gpu_assignment
             config_set.append(config)
@@ -152,12 +152,14 @@ def generateConfigSplitOptions(hw_config: HardwareConfig) -> List[List[HardwareC
     return config_possibilities
 
 
-def checkProcessorIDContent(cpu_ids):
+def checkProcessorIDContent(cpu_ids: List[int]):
     """
         Given an assigned value for cpu_ids, assure that
         1. It is a list
         2. The list contains all integers
-        3. The stride between integers is consistent
+        3. The stride between integers is consistent.
+
+        Exits the program if a condition is not met.
     """
     if not isinstance(cpu_ids, list):
         utils.fatal_error("Expected a list for parameter 'cpu_ids'")
@@ -170,9 +172,8 @@ def checkProcessorIDContent(cpu_ids):
         return
 
     if len(cpu_ids) > 1:
-        diff = cpu_ids[1] - cpu_ids[0]
+        diff: int = cpu_ids[1] - cpu_ids[0]
 
         for i, val in enumerate(cpu_ids[:-1]):
             if (cpu_ids[i+1] - val) != diff:
                 utils.fatal_error("Inconsistent stride between cpu ids")
-    return True

@@ -7,6 +7,7 @@ from gromax.hardware_config import generateConfigSplitOptions, distributeGpuIdsT
 from unittest.mock import patch
 
 
+# noinspection PyTypeChecker
 class ProcessorIDContentTests(unittest.TestCase):
 
     def testGoodSingleProcessor(self):
@@ -28,7 +29,6 @@ class ProcessorIDContentTests(unittest.TestCase):
     @patch('gromax.utils.fatal_error')
     def testFailIfNotList(self, mock_fatal_error):
         cpu_ids = 1
-        # TODO this is ugly, but mocking out fatal_error causes the function to continue
         with self.assertRaises(TypeError):
             checkProcessorIDContent(cpu_ids)
         self.assertTrue(mock_fatal_error.called)
@@ -65,7 +65,6 @@ class ProcessorIDContentTests(unittest.TestCase):
 
 
 def filePath(file_name):
-    # TODO consider wrapping around this in testutils (like LoadTestFile or TestFilePath)
     return os.path.abspath(testutils.get_relative_path(file_name))
 
 
