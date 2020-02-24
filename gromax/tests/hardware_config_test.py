@@ -12,19 +12,19 @@ class ProcessorIDContentTests(unittest.TestCase):
 
     def testGoodSingleProcessor(self):
         cpu_ids = [0]
-        self.assertTrue(checkProcessorIDContent(cpu_ids))
+        checkProcessorIDContent(cpu_ids)
 
     def testGoodOffsetFromZero(self):
         cpu_ids = [1]
-        self.assertTrue(checkProcessorIDContent(cpu_ids))
+        checkProcessorIDContent(cpu_ids)
 
     def testGoodMultipleProcessors(self):
         cpu_ids = [1, 2]
-        self.assertTrue(checkProcessorIDContent(cpu_ids))
+        checkProcessorIDContent(cpu_ids)
 
     def testGoodLongStride(self):
         cpu_ids = [1, 4, 7]
-        self.assertTrue(checkProcessorIDContent(cpu_ids))
+        checkProcessorIDContent(cpu_ids)
 
     @patch('gromax.utils.fatal_error')
     def testFailIfNotList(self, mock_fatal_error):
