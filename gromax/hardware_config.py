@@ -1,5 +1,10 @@
 import gromax.utils as utils
+import math
 from copy import deepcopy
+from typing import List
+
+# Convenience Definitions
+GpuIDs = List[int]
 
 
 class HardwareConfig(object):
@@ -73,6 +78,78 @@ class HardwareConfig(object):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+
+def distributeGpuIdsToTasks(gpu_ids: GpuIDs, ntasks: int) -> List[GpuIDs]:
+    """
+        Creates a list of lists of [[task 0 gpu ids][task 1 gpu ids]]
+
+        There can be multiple gpu_ids assigned to a task, or the same GPU can be assigned
+        to multiple tasks, depending on the workload
+    """
+    if not isinstance(gpu_ids, list):
+        raise TypeError("Gpu IDs must be a list - is {}".format(gpu_ids))
+
+    n_gpu_ids: int = len(gpu_ids)
+    if n_gpu_ids % ntasks != 0 and ntasks % n_gpu_ids != 0:
+        raise ValueError("The number of tasks ({}) needs to be divisible by the number of GPU ids ".format(ntasks) +
+                         "({}), or vice versa".format(n_gpu_ids))
+
+    result: List[GpuIDs] = []
+    current_index: int = 0
+    for i, task in enumerate(range(ntasks)):
+        task_ids: GpuIDs = []
+        if n_gpu_ids > ntasks:
+            ratio: int = int(n_gpu_ids / ntasks)
+            for r in range(ratio):
+                task_ids.append(gpu_ids[current_index])
+                current_index += 1
+        else:
+            ratio: int = int(ntasks / n_gpu_ids)
+            task_ids.append(gpu_ids[math.floor(i / ratio)])
+
+        result.append(task_ids)
+    return result
+
+
+def generateConfigSplitOptions(hw_config: HardwareConfig) -> List[List[HardwareConfig]]:
+    """
+        Hardware configs can be split for simultaneous simulations with the following constraints
+
+        - Each split config must have the same number of cores
+        - All cores must be used (could relax this in the future)
+        - Num_sims / num_GPus must be an integer. Note that in the case of 1 GPU, all combinations satisfy this
+          constraint.
+
+        Returns a list of lists of [ [configsplit1] [configsplit2] ... ]
+        where configsplit1 can be 1 or more hw_configs
+    """
+    num_total_cpus: int = hw_config.num_cpus
+    num_total_gpus: int = hw_config.num_gpus
+
+    # The whole config is always an option
+    config_possibilities: List[List[HardwareConfig]] = [[hw_config]]
+
+    # No splitting if no GPUs - is never good performance for Gromacs
+    if num_total_gpus == 0:
+        return config_possibilities
+
+    # Search division options, between 1 cpu per sim and half of the cpus per sim. Note that the all CPUs
+    # per sim option is already accounted for above.
+    cpu_per_sim_options: List[int] = [i for i in range(1, int(num_total_cpus / 2) + 1)
+                                      if num_total_cpus % i == 0 and int(num_total_cpus / i) % num_total_gpus == 0]
+    for cpus_per_sim in cpu_per_sim_options:
+        sims_in_set: int = int(num_total_cpus / cpus_per_sim)
+
+        config_set: List[HardwareConfig] = []
+        gpu_id_assignments: List[List[int]] = distributeGpuIdsToTasks(hw_config.gpu_ids, sims_in_set)
+        for i, gpu_assignment in enumerate(gpu_id_assignments):
+            config = HardwareConfig()
+            config.cpu_ids = hw_config.cpu_ids[i * cpus_per_sim: (i + 1) * cpus_per_sim]
+            config.gpu_ids = gpu_assignment
+            config_set.append(config)
+        config_possibilities.append(config_set)
+    return config_possibilities
 
 
 def checkProcessorIDContent(cpu_ids):

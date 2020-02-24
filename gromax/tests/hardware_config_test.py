@@ -1,7 +1,9 @@
+import math
 import os
 import unittest
 import gromax.testutils as testutils
 from gromax.hardware_config import checkProcessorIDContent, HardwareConfig
+from gromax.hardware_config import generateConfigSplitOptions, distributeGpuIdsToTasks
 from unittest.mock import patch
 
 
@@ -131,3 +133,97 @@ class HardwareConfigEqualityTest(unittest.TestCase):
         self.assertNotEqual(self.config1, [])
         self.assertNotEqual(self.config1, None)
         self.assertNotEqual(self.config1, "what?")
+
+
+class GenerateConfigSplitOptionsTest(unittest.TestCase):
+    def setUp(self):
+        self.config = HardwareConfig()
+        self.expected_base = [[self.config]]
+
+    def testNoGpu(self):
+        self.config.cpu_ids = [0, 1, 2, 3]
+        self.config.gpu_ids = []
+
+        result = generateConfigSplitOptions(self.config)
+        self.assertEqual(self.expected_base, result)
+
+    def testOnlyPrimeDivision(self):
+        self.config.cpu_ids = [0, 1, 2]
+        self.config.gpu_ids = [0]
+
+        options = [HardwareConfig(cpu_ids=[i], gpu_ids=[0]) for i in range(3)]
+        self.expected_base.append(options)
+        result = generateConfigSplitOptions(self.config)
+        self.assertEqual(self.expected_base, result)
+
+    def testNoGoodDecompositionForMultipleGpus(self):
+        # with 2 gpus and 3 cpus, the only decomposition is the original
+        self.config.cpu_ids = [0, 1, 2]
+        self.config.gpu_ids = [0, 1]
+
+        result = generateConfigSplitOptions(self.config)
+        self.assertEqual(self.expected_base, result)
+
+    def testMultipleDecompositionWithOneGpu(self):
+        self.config.cpu_ids = [0, 1, 2, 3]
+        self.config.gpu_ids = [0]
+
+        single_cpu_option = [HardwareConfig(cpu_ids=[i], gpu_ids=[0]) for i in range(4)]
+        double_cpu_option = [HardwareConfig(cpu_ids=[i, i + 1], gpu_ids=[0]) for i in (0, 2)]
+        self.expected_base.append(single_cpu_option)
+        self.expected_base.append(double_cpu_option)
+        result = generateConfigSplitOptions(self.config)
+        self.assertEqual(self.expected_base, result)
+
+    def testMultipleDecompositionWithMultipleGpus(self):
+        # with 6 cpus and 2 gpus, the 3x option should not exist
+        self.config.cpu_ids = [0, 1, 2, 3, 4, 5]
+        self.config.gpu_ids = [0, 1]
+
+        single_cpu_option = [HardwareConfig(cpu_ids=[i], gpu_ids=[math.floor(i / 3)]) for i in range(6)]
+        three_cpu_option = [HardwareConfig(cpu_ids=[i, i+1, i+2], gpu_ids=[gpu_id]) for gpu_id, i in enumerate((0, 3))]
+        self.expected_base.append(single_cpu_option)
+        self.expected_base.append(three_cpu_option)
+        result = generateConfigSplitOptions(self.config)
+        self.assertEqual(self.expected_base, result)
+
+    def testMultipleDecompositionWithOddRankOption(self):
+        # with 6 cpus and 3 gpus, the 3x option exists but not the 2x
+        self.config.cpu_ids = [0, 1, 2, 3, 4, 5]
+        self.config.gpu_ids = [0, 1, 2]
+        single_cpu_option = [HardwareConfig(cpu_ids=[i], gpu_ids=[math.floor(i / 2)]) for i in range(6)]
+        two_cpu_option = [HardwareConfig(cpu_ids=[i, i+1], gpu_ids=[gpu_id]) for gpu_id, i in enumerate((0, 2, 4))]
+        self.expected_base.append(single_cpu_option)
+        self.expected_base.append(two_cpu_option)
+        result = generateConfigSplitOptions(self.config)
+        self.assertEqual(self.expected_base, result)
+
+
+class DistributeGpuIdsToTasksTest(unittest.TestCase):
+
+    # noinspection PyTypeChecker
+    def testFailsWithBadInput(self):
+        with self.assertRaises(ValueError):
+            distributeGpuIdsToTasks([1, 2, 3], 5)
+        with self.assertRaises(ValueError):
+            distributeGpuIdsToTasks([1, 2, 3], 2)
+        with self.assertRaises(TypeError):
+            distributeGpuIdsToTasks(1, 5)
+
+    def testSingleTaskSingleGpu(self):
+        self.assertEqual(distributeGpuIdsToTasks([0], 1), [[0]])
+
+    def testSingleTaskMultipleGpu(self):
+        self.assertEqual(distributeGpuIdsToTasks([0, 1, 2], 1), [[0, 1, 2]])
+
+    def testMultiTaskSingleGpu(self):
+        self.assertEqual(distributeGpuIdsToTasks([0], 3), [[0], [0], [0]])
+
+    def testMultiTaskMultiGpu(self):
+        # more GPUs than tasks
+        self.assertEqual(distributeGpuIdsToTasks([0, 1, 2, 3], 2), [[0, 1], [2, 3]])
+        # more tasks than GPUs
+        self.assertEqual(distributeGpuIdsToTasks([0, 1], 6), [[0], [0], [0], [1], [1], [1]])
+
+    def testHandlesNonZeroStartingIDs(self):
+        self.assertEqual(distributeGpuIdsToTasks([5, 18], 1), [[5, 18]])
