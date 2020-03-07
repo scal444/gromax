@@ -16,6 +16,7 @@ GPUs this problem becomes even more complicated. Gromax is here to help.
 ## Current Capabilities
 - Given a Gromacs TPR file and a description of the hardware (CPU count and GPU IDs), generate a series of Gromacs run
   commands to explore which parameters provide the best performance for the hardware.
+- Supports Gromacs major versions 2016, 2018, 2019, and 2020 (not including experimental P2P GPU implementations yet)
 - Break down the available hardware into subcomponents to assess maximum throughput on a single node.
 - Generate a simple bash script to execute
 - See the examples section in the documentation

@@ -1,12 +1,11 @@
 import unittest
 
 from gromax.combination_generator import genNtmpiOptions, determineGpuTasks, applyOptionToAll, applyOptionIf
-from gromax.combination_generator import addConfigDependentOptions
+from gromax.combination_generator import addConfigDependentOptions, createRunOptionsForSingleConfig,  _createBaseOptions
 from gromax.hardware_config import HardwareConfig
 
 
 class GenNtmpiOptionsTest(unittest.TestCase):
-
     def testCatchesFailure(self):
         with self.assertRaises(ValueError):
             genNtmpiOptions(0)
@@ -25,6 +24,9 @@ class GenNtmpiOptionsTest(unittest.TestCase):
 
     def testWithNGpu(self):
         self.assertEqual(genNtmpiOptions(6, 2), [2, 6])
+
+    def testNoGpu(self):
+        self.assertEqual(genNtmpiOptions(5, 0), [5])
 
 
 class DetermineGpuTasksTest(unittest.TestCase):
@@ -118,36 +120,689 @@ class AddConfigDependentOptionsTest(unittest.TestCase):
 
 
 class CreateRunOptionsForSingleConfigTestv2016(unittest.TestCase):
+    expected_base = {
+        **_createBaseOptions(),
+        "nt": 4,
+        "pinstride": 1,
+        "pinoffset": 0,
+    }
+    version = "2016"
+
+    def setUp(self):
+        self.config = HardwareConfig(cpu_ids=[0, 1, 2, 3])
+
     def testNoGpu(self):
-        pass
+        result = createRunOptionsForSingleConfig(self.config, self.version)
+        expected = [
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "cpu"
+            }
+        ]
+        self.assertCountEqual(result, expected)
 
     def testSingleGPU(self):
-        pass
+        self.maxDiff = None
+        self.config.gpu_ids = [0]
+        result = createRunOptionsForSingleConfig(self.config, self.version)
+        expected = [
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "gputasks": "0000"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "gputasks": "00"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 1,
+                "ntomp": 4,
+                "nb": "gpu",
+                "gputasks": "0"
+            },
+        ]
+        self.assertCountEqual(result, expected)
 
     def testMultiGPU(self):
-        pass
+        self.config.gpu_ids = [0, 1]
+        result = createRunOptionsForSingleConfig(self.config, self.version)
+        expected = [
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "gputasks": "0011"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "gputasks": "01"
+            },
+        ]
+        self.assertCountEqual(result, expected)
 
 
 class CreateRunOptionsForSingleConfigTestv2018(unittest.TestCase):
+    expected_base = {
+        **_createBaseOptions(),
+        "nt": 4,
+        "pinstride": 1,
+        "pinoffset": 0,
+    }
+    version = "2018"
+
+    def setUp(self):
+        self.config = HardwareConfig(cpu_ids=[0, 1, 2, 3])
+
     def testNoGpu(self):
-        pass
+        result = createRunOptionsForSingleConfig(self.config, self.version)
+        expected = [
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "cpu"
+            }
+        ]
+        self.assertCountEqual(result, expected)
 
     def testSingleGPU(self):
-        pass
+        self.maxDiff = None
+        self.config.gpu_ids = [0]
+        result = createRunOptionsForSingleConfig(self.config, self.version)
+        expected = [
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "pme": "cpu",
+                "gputasks": "0000"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "pme": "cpu",
+                "gputasks": "00"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 1,
+                "ntomp": 4,
+                "nb": "gpu",
+                "pme": "cpu",
+                "gputasks": "0"
+            },
+            # PME = gpu cases need npme=1
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "pme": "gpu",
+                "npme": 1,
+                "gputasks": "0000"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "pme": "gpu",
+                "npme": 1,
+                "gputasks": "00"
+            },
+            # Note the double gputask even though there's only one rank
+            {
+                **self.expected_base,
+                "ntmpi": 1,
+                "ntomp": 4,
+                "nb": "gpu",
+                "pme": "gpu",
+                "gputasks": "00"
+            },
+        ]
+        self.assertCountEqual(result, expected)
 
     def testMultiGPU(self):
-        pass
+        self.config.gpu_ids = [0, 1]
+        result = createRunOptionsForSingleConfig(self.config, self.version)
+        expected = [
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "pme": "cpu",
+                "gputasks": "0011"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "pme": "cpu",
+                "gputasks": "01"
+            },
+            # PME = gpu cases need npme=1
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "pme": "gpu",
+                "npme": 1,
+                "gputasks": "0011"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "pme": "gpu",
+                "npme": 1,
+                "gputasks": "01"
+            },
+
+        ]
+        self.assertCountEqual(result, expected)
 
 
 class CreateRunOptionsForSingleConfigTestv2019(unittest.TestCase):
+    expected_base = {
+        **_createBaseOptions(),
+        "nt": 4,
+        "pinstride": 1,
+        "pinoffset": 0,
+    }
+    version = "2019"
+
+    def setUp(self):
+        self.config = HardwareConfig(cpu_ids=[0, 1, 2, 3])
+
     def testNoGpu(self):
-        pass
+        result = createRunOptionsForSingleConfig(self.config, self.version)
+        expected = [
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "cpu"
+            }
+        ]
+        self.assertCountEqual(result, expected)
 
     def testSingleGPU(self):
-        pass
+        self.maxDiff = None
+        self.config.gpu_ids = [0]
+        result = createRunOptionsForSingleConfig(self.config, self.version)
+        expected = [
+            # bonded = cpu cases
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "pme": "cpu",
+                "bonded": "cpu",
+                "gputasks": "0000"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "cpu",
+                "gputasks": "00"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 1,
+                "ntomp": 4,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "cpu",
+                "gputasks": "0"
+            },
+            # PME = gpu cases need npme=1
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "gpu",
+                "npme": 1,
+                "gputasks": "0000"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "gpu",
+                "npme": 1,
+                "gputasks": "00"
+            },
+            # Note the double gputask even though there's only one rank
+            {
+                **self.expected_base,
+                "ntmpi": 1,
+                "ntomp": 4,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "gpu",
+                "gputasks": "00"
+            },
+
+            # Bonded = gpu cases
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "cpu",
+                "gputasks": "0000"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "cpu",
+                "gputasks": "00"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 1,
+                "ntomp": 4,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "cpu",
+                "gputasks": "0"
+            },
+            # PME = gpu cases need npme=1
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "gpu",
+                "npme": 1,
+                "gputasks": "0000"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "gpu",
+                "npme": 1,
+                "gputasks": "00"
+            },
+            # Note the double gputask even though there's only one rank
+            {
+                **self.expected_base,
+                "ntmpi": 1,
+                "ntomp": 4,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "gpu",
+                "gputasks": "00"
+            },
+        ]
+        self.assertCountEqual(result, expected)
 
     def testMultiGPU(self):
-        pass
+        self.config.gpu_ids = [0, 1]
+        result = createRunOptionsForSingleConfig(self.config, self.version)
+        expected = [
+            # bonded = cpu
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "cpu",
+                "gputasks": "0011"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "cpu",
+                "gputasks": "01"
+            },
+            # PME = gpu cases need npme=1
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "gpu",
+                "npme": 1,
+                "gputasks": "0011"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "gpu",
+                "npme": 1,
+                "gputasks": "01"
+            },
+            # bonded = gpu
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "cpu",
+                "gputasks": "0011"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "cpu",
+                "gputasks": "01"
+            },
+            # PME = gpu cases need npme=1
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "gpu",
+                "npme": 1,
+                "gputasks": "0011"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "gpu",
+                "npme": 1,
+                "gputasks": "01"
+            },
+
+        ]
+        self.assertCountEqual(result, expected)
+
+
+class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
+    """
+        Note that without P2P GPU stuff, this is the same as 2019.
+    """
+    expected_base = {
+        **_createBaseOptions(),
+        "nt": 4,
+        "pinstride": 1,
+        "pinoffset": 0,
+    }
+    version = "2020"
+
+    def setUp(self):
+        self.config = HardwareConfig(cpu_ids=[0, 1, 2, 3])
+
+    def testNoGpu(self):
+        result = createRunOptionsForSingleConfig(self.config, self.version)
+        expected = [
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "cpu"
+            }
+        ]
+        self.assertCountEqual(result, expected)
+
+    def testSingleGPU(self):
+        self.maxDiff = None
+        self.config.gpu_ids = [0]
+        result = createRunOptionsForSingleConfig(self.config, self.version)
+        expected = [
+            # bonded = cpu cases
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "pme": "cpu",
+                "bonded": "cpu",
+                "gputasks": "0000"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "cpu",
+                "gputasks": "00"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 1,
+                "ntomp": 4,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "cpu",
+                "gputasks": "0"
+            },
+            # PME = gpu cases need npme=1
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "gpu",
+                "npme": 1,
+                "gputasks": "0000"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "gpu",
+                "npme": 1,
+                "gputasks": "00"
+            },
+            # Note the double gputask even though there's only one rank
+            {
+                **self.expected_base,
+                "ntmpi": 1,
+                "ntomp": 4,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "gpu",
+                "gputasks": "00"
+            },
+
+            # Bonded = gpu cases
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "cpu",
+                "gputasks": "0000"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "cpu",
+                "gputasks": "00"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 1,
+                "ntomp": 4,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "cpu",
+                "gputasks": "0"
+            },
+            # PME = gpu cases need npme=1
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "gpu",
+                "npme": 1,
+                "gputasks": "0000"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "gpu",
+                "npme": 1,
+                "gputasks": "00"
+            },
+            # Note the double gputask even though there's only one rank
+            {
+                **self.expected_base,
+                "ntmpi": 1,
+                "ntomp": 4,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "gpu",
+                "gputasks": "00"
+            },
+        ]
+        self.assertCountEqual(result, expected)
+
+    def testMultiGPU(self):
+        self.config.gpu_ids = [0, 1]
+        result = createRunOptionsForSingleConfig(self.config, self.version)
+        expected = [
+            # bonded = cpu
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "cpu",
+                "gputasks": "0011"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "cpu",
+                "gputasks": "01"
+            },
+            # PME = gpu cases need npme=1
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "gpu",
+                "npme": 1,
+                "gputasks": "0011"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "gpu",
+                "npme": 1,
+                "gputasks": "01"
+            },
+            # bonded = gpu
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "cpu",
+                "gputasks": "0011"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "cpu",
+                "gputasks": "01"
+            },
+            # PME = gpu cases need npme=1
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "gpu",
+                "npme": 1,
+                "gputasks": "0011"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "gpu",
+                "npme": 1,
+                "gputasks": "01"
+            },
+
+        ]
+        self.assertCountEqual(result, expected)
 
 
 class CreateRunOptionsForConfigGroupTest(unittest.TestCase):

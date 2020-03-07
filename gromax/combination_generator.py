@@ -22,9 +22,14 @@ def genNtmpiOptions(total_procs: int, num_gpus: int = 1) -> List[int]:
 
             Note that in this example ntmpi=3 does not work, because you can't eveny split 2 GPUs among
             3 ranks.
+
+        If passed with no GPUs, returns a size one list with the number of processors, as non-GPU simulations
+        should maximize thread counts.
     """
     if total_procs <= 0:
         raise ValueError("Numbers need to be positive, total_procs = {}".format(total_procs))
+    if num_gpus <= 0:
+        return [total_procs]
     curroption: int = num_gpus
     options: List[int] = []
     while curroption <= total_procs:
@@ -118,10 +123,14 @@ def _createVersionedOptions(base_opts: ParameterSet, hw_config: HardwareConfig, 
 
     # Add thread information
     ntmpi_possibilities: List[int] = genNtmpiOptions(hw_config.num_cpus, hw_config.num_gpus)
-    options *= len(ntmpi_possibilities)
-    for ntmpi, opt in zip(ntmpi_possibilities, options):
-        opt["ntmpi"] = ntmpi
-        opt["ntomp"] = int(opt["nt"] / ntmpi)
+    options = applyOptionToAll(options, "ntmpi", ntmpi_possibilities)
+    # Once ntmpi is set, ntomp is unambiguous.
+    for opt in options:
+        nt: int = opt["nt"]
+        ntmpi: int = opt["ntmpi"]
+        # These should be guaranteed to be divisible from genNtmpiOptions
+        assert nt % ntmpi == 0
+        opt["ntomp"] = int(nt / ntmpi)
 
     if not hw_config.num_gpus > 0:
         return options
@@ -131,10 +140,18 @@ def _createVersionedOptions(base_opts: ParameterSet, hw_config: HardwareConfig, 
 
         # set npme if more than one rank.
         def nPmePredicate(params: ParameterSet) -> bool:
-            return params["ntmpi"] > 1
+            # TODO verify that this is correct on all versions
+            return params["pme"] == "gpu" and params["ntmpi"] > 1
         options = applyOptionIf(options, "npme", 1, nPmePredicate)
+    # TODO double-check pme and bonded compatibility. Can you have bonded and not pme?
     if gmx_version >= "2019":
         options = applyOptionToAll(options, "bonded", ["cpu", "gpu"])
+
+    # Add gputasks
+    for opt in options:
+        if opt.get("nb") == "gpu":
+            using_pme_on_gpu: bool = opt.get("pme", "cpu") == "gpu"
+            opt["gputasks"] = determineGpuTasks(opt["ntmpi"], hw_config.gpu_ids, using_pme_on_gpu)
     return options
 
 
