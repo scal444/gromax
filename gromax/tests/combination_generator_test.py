@@ -821,6 +821,10 @@ class CreateRunOptionsForConfigGroupTest(unittest.TestCase):
     def testEmptyBreakdown(self):
         self.assertEqual(createRunOptionsForConfigGroup([], "2020"), [])
 
+    def testFailsInvalidVersion(self):
+        with self.assertRaises(ValueError):
+            createRunOptionsForConfigGroup([HardwareConfig(cpu_ids=[0])], "2015")
+
     def testSinglebreakdown(self):
         configs = [HardwareConfig(cpu_ids=[0, 1, 2, 3], gpu_ids=[0])]
         result = createRunOptionsForConfigGroup(configs, "2016")
@@ -900,5 +904,3 @@ class CreateRunOptionsForConfigGroupTest(unittest.TestCase):
             ]
         ]
         self.assertCountEqual(result, expected)
-
-
