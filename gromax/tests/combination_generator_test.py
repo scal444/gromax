@@ -2,6 +2,7 @@ import unittest
 
 from gromax.combination_generator import genNtmpiOptions, determineGpuTasks, applyOptionToAll, applyOptionIf
 from gromax.combination_generator import addConfigDependentOptions, createRunOptionsForSingleConfig,  _createBaseOptions
+from gromax.combination_generator import createRunOptionsForConfigGroup
 from gromax.hardware_config import HardwareConfig
 
 
@@ -806,12 +807,98 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
 
 
 class CreateRunOptionsForConfigGroupTest(unittest.TestCase):
-    # Mock out single config here and replace with something we can easily test.
+    common = {
+        'nsteps': 5000,
+        'resetstep': 2500,
+        'pin': 'on',
+        'noconfout': True,
+        'nstlist': 80,
+        'pinstride': 1,
+        'nb': 'gpu',
+
+    }
+
     def testEmptyBreakdown(self):
-        pass
+        self.assertEqual(createRunOptionsForConfigGroup([], "2020"), [])
 
     def testSinglebreakdown(self):
-        pass
+        configs = [HardwareConfig(cpu_ids=[0, 1, 2, 3], gpu_ids=[0])]
+        result = createRunOptionsForConfigGroup(configs, "2016")
+        expected = [
+            [
+                {
+                    **self.common,
+                    'nt': 4,
+                    'pinoffset': 0,
+                    'ntmpi': 1,
+                    'ntomp': 4,
+                    'gputasks': '0'
+                },
+            ],
+            [
+                {
+                    **self.common,
+                    'nt': 4,
+                    'pinoffset': 0,
+                    'ntmpi': 2,
+                    'ntomp': 2,
+                    'gputasks': '00'
+                },
+            ],
+            [
+                {
+                    **self.common,
+                    'nt': 4,
+                    'pinoffset': 0,
+                    'ntmpi': 4,
+                    'ntomp': 1,
+                    'gputasks': '0000'
+                },
+            ]
+        ]
+        self.assertCountEqual(result, expected)
 
     def testMultiBreakdown(self):
-        pass
+        configs = [HardwareConfig(cpu_ids=[0, 1], gpu_ids=[0]), HardwareConfig(cpu_ids=[2, 3], gpu_ids=[1])]
+        result = createRunOptionsForConfigGroup(configs, "2016")
+        expected = [
+            [
+                {
+                     **self.common,
+                     'nt': 2,
+                     'pinoffset': 0,
+                     'ntmpi': 1,
+                     'ntomp': 2,
+                     'gputasks': '0'
+                },
+                {
+                    **self.common,
+                    'nt': 2,
+                    'pinoffset': 2,
+                    'ntmpi': 1,
+                    'ntomp': 2,
+                    'gputasks': '1'
+                }
+            ],
+            [
+                {
+                    **self.common,
+                    'nt': 2,
+                    'pinoffset': 0,
+                    'ntmpi': 2,
+                    'ntomp': 1,
+                    'gputasks': '00'
+                },
+                {
+                    **self.common,
+                    'nt': 2,
+                    'pinoffset': 2,
+                    'ntmpi': 2,
+                    'ntomp': 1,
+                    'gputasks': '11'
+                 }
+            ]
+        ]
+        self.assertCountEqual(result, expected)
+
+

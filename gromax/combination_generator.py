@@ -1,6 +1,9 @@
 from gromax.hardware_config import HardwareConfig
 from copy import deepcopy
-from typing import List, Dict, Any, Callable
+from typing import List, Dict, Set, Any, Callable
+
+# Constants
+_SUPPORTED_VERSIONS: Set[str] = {"2016", "2018", "2019", "2020"}
 
 # Convenience definitions
 # A grouping of GPU ids.
@@ -119,6 +122,10 @@ def applyOptionIf(parameters: List[ParameterSet], key: str, value: Any,
 
 
 def _createVersionedOptions(base_opts: ParameterSet, hw_config: HardwareConfig, gmx_version: str) -> ParameterSetGroup:
+    """
+        Given a partial base parameter set, a hardware config, and a target Gromacs version, creates all of the
+        parameter combination possibilities.
+    """
     options: List[ParameterSet] = [base_opts]
 
     # Add thread information
@@ -155,6 +162,11 @@ def _createVersionedOptions(base_opts: ParameterSet, hw_config: HardwareConfig, 
     return options
 
 
+def _versionIsValid(version: str):
+    # TODO move this more central when sanitizing user input
+    return version in _SUPPORTED_VERSIONS
+
+
 def createRunOptionsForSingleConfig(hw_config: HardwareConfig, gmx_version: str) -> ParameterSetGroup:
     """
         Generate the set of possible run options for a specific hardware config.
@@ -174,8 +186,17 @@ def createRunOptionsForConfigGroup(configs: HardwareConfigBreakdown, gmx_version
 
         Returns a list with structure:
         [concurrent grouping 1, concurrent_grouping 2...],
-        where each concurrent grouping is a list of Gromacs parameter sets to be executed concurrently.
+        where each concurrent grouping is a list of Gromacs parameter sets to be executed concurrently. In other words,
+        each top level element of the returned list is the set of one or more concurrent Gromacs commands to fully
+        exercise the hardware.
     """
+    if len(configs) == 0:
+        return []
+
+    if not _versionIsValid(gmx_version):
+        raise ValueError("Invalid Gromacs version: {}. Supported options are {}".format(gmx_version,
+                                                                                        _SUPPORTED_VERSIONS))
+
     # This gets us all the combinations we want, but with the wrong structure. The top level is for each partial
     # hardware config, and the second level is over the options within each subconfig.
     breakdowns_per_config: List[ParameterSetGroup] = [createRunOptionsForSingleConfig(config, gmx_version)
