@@ -12,6 +12,8 @@ there are a large number of simulation parameters that need to be considered and
 GPUs this problem becomes even more complicated. Gromax is here to help.
 
 
+## Requirements
+- python 3.6 or greater
 
 ## Current Capabilities
 - Given a Gromacs TPR file and a description of the hardware (CPU count and GPU IDs), generate a series of Gromacs run
@@ -27,6 +29,7 @@ GPUs this problem becomes even more complicated. Gromax is here to help.
 
 ## Long-term directions
 - Support for other simulation suites
+
 
 ## Other awesome resources
 - Want to see how well your system scales to various clusters? Check out
