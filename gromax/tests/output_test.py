@@ -1,5 +1,5 @@
 import unittest
-from gromax.output import _serializeParams, _serializeConcurrentGroup
+from gromax.output import _serializeParams, _serializeConcurrentGroup, _incrementLines, _wrapInLoop
 
 
 class SerializeParamsTest(unittest.TestCase):
@@ -31,7 +31,8 @@ class SerializeParamsTest(unittest.TestCase):
         self.assertEqual(_serializeParams(params), "-maxh 3.5 -pme gpu")
 
     def testPrependGmx(self):
-        pass
+        params = {"pme": "gpu", "maxh": 3.5}
+        self.assertEqual(_serializeParams(params, gmx="gmx_mpi"), "gmx_mpi -maxh 3.5 -pme gpu")
 
 
 class SerializeConcurrentGroupTest(unittest.TestCase):
@@ -60,3 +61,37 @@ class SerializeConcurrentGroupTest(unittest.TestCase):
     def testPrependGmx(self):
         expected: str = "gmx_mpi -nt 4 -pinoffset 0&\ngmx_mpi -nt 4 -pinoffset 4&\ngmx_mpi -nt 4 -pinoffset 8"
         self.assertEqual(_serializeConcurrentGroup(self.param_group, gmx="gmx_mpi"), expected)
+
+
+class IncrementLinesTest(unittest.TestCase):
+
+    def testNoInput(self):
+        self.assertEqual(_incrementLines("", 1), "")
+
+    def testZeroPadding(self):
+        single_line: str = "some string"
+        self.assertEqual(_incrementLines(single_line, 0), single_line)
+
+    def testInvalid(self):
+        with self.assertRaises(ValueError):
+            _incrementLines("some string", -5)
+
+    def testPadsMultipleLines(self):
+        multi_lines = "some string\nanother string\na third string"
+        expected: str = "   some string\n   another string\n   a third string"
+        self.assertEqual(expected, _incrementLines(multi_lines, 3))
+
+    def testKeepsOriginalSpacing(self):
+        multi_lines = "some string\n  already incremented"
+        expected: str = "   some string\n     already incremented"
+        self.assertEqual(expected, _incrementLines(multi_lines, 3))
+
+
+class WrapInLoopTest(unittest.TestCase):
+    def testWrapEmptyLoop(self):
+        self.assertEqual(_wrapInLoop("", "i", 5), "for i in {1..5}; do\n\ndone")
+
+    def testWrapsLines(self):
+        lines: str = "line 1\n  line 2 incremented"
+        expected: str = "for var in {1..$trials}; do\n   line 1\n     line 2 incremented\ndone"
+        self.assertEqual(expected, _wrapInLoop(lines, "var", "$trials", tab_increment=3))

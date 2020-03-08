@@ -36,3 +36,41 @@ def _serializeConcurrentGroup(param_group: ParameterSetGroup, gmx: str = None) -
     for params in param_group:
         param_lines.append(_serializeParams(params, gmx))
     return "&\n".join(param_lines)
+
+
+def _incrementLines(lines: str, amount: int) -> str:
+    """
+        Takes a string and pads each line with 'amount' additional spaces.
+        If input is empty, returns empty string.
+
+        Raises ValueError if negative input.
+    """
+    if amount < 0:
+        raise ValueError("Cannot pad with a negative number of spaces - amount requested={}".format(amount))
+    if not len(lines):
+        return ""
+
+    joiner: str = "\n" + " " * amount
+    padded_lines: str = joiner.join(lines.split("\n"))
+    # Need to handle first line separately
+    return " " * amount + padded_lines
+
+
+def _wrapInLoop(serialized_group: str, loop_variable: str, count: Any, tab_increment=2) -> str:
+    """
+        Creates a bash for loop around a string, with the format
+
+        for <loop_variable> in {1...<count}; do
+          <tab_increment amount> line1
+          <tab_increment amount> line2
+         done
+
+         Note that 'count' can be a variable.
+    """
+    base: str = "for {:s} in {{1..{}}}; do".format(loop_variable, count)
+    tabbed_lines: str = _incrementLines(serialized_group, tab_increment)
+    return "\n".join((base, tabbed_lines, "done"))
+
+
+def _SerializeAllGroups(groups: List[ParameterSetGroup]) -> str:
+    pass
