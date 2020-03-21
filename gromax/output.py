@@ -69,6 +69,12 @@ def _injectTpr(param_group: ParameterSetGroup, placeholder: str = "${tpr}"):
         params["s"] = placeholder
 
 
+def _injectTiming(param_group: ParameterSetGroup, nsteps: str, resetstep: str):
+    for params in param_group:
+        params["nsteps"] = nsteps
+        params["resetstep"] = resetstep
+
+
 def _addDirectoryHandling(params: str, workdir: str = "${workdir}", trial_placeholder: str = "${i}") -> str:
     return "\n".join([
         "trialdir={}/T{}\ncd $trialdir".format(workdir, trial_placeholder),
@@ -94,17 +100,18 @@ def _wrapInLoop(serialized_group: str, loop_variable: str, count: Any, tab_incre
 
 
 def _ProcessSingleGroup(param_group: ParameterSetGroup, gmx: str, loop_var: str,
-                        count: Any, tab_increment: int) -> str:
+                        count: Any, resetstep: str, nsteps: str, tab_increment: int) -> str:
     param_group_copy: ParameterSetGroup = deepcopy(param_group)
     _injectTpr(param_group_copy)
     _injectFileNaming(param_group_copy)
+    _injectTiming(param_group_copy, nsteps, resetstep)
     serialized: str = _serializeConcurrentGroup(param_group_copy, prepend=gmx)
     serialized_with_dir_handling: str = _addDirectoryHandling(serialized, )
     return _wrapInLoop(serialized_with_dir_handling, loop_var, count, tab_increment=tab_increment)
 
 
 def _ProcessAllGroups(groups: List[ParameterSetGroup], loop_variable: str, gmx: str, count: Any,
-                      tab_increment: int = 2) -> str:
+                      nsteps: str = "${nsteps}", resetstep: str = "${resetstep}", tab_increment: int = 2) -> str:
     """
         Creates the body of a bash script to run groups of concurrent gromacs simulations. Each group is wrapped in
         a loop.
@@ -113,6 +120,28 @@ def _ProcessAllGroups(groups: List[ParameterSetGroup], loop_variable: str, gmx: 
     for i, group in enumerate(groups):
         group_num: int = i + 1
         result += "group={}\n".format(group_num)
-        result += _ProcessSingleGroup(group, gmx, loop_variable, count, tab_increment)
+        result += _ProcessSingleGroup(group, gmx, loop_variable, count, nsteps=nsteps, resetstep=resetstep,
+                                      tab_increment=tab_increment)
         result += "\n\n\n"
     return result
+
+
+def _addHeader(tpr, nsteps, resetstep) -> str:
+    return "#!/bin/bash\n\ntpr={}\nnsteps={}\nresetstep={}".format(tpr, nsteps, resetstep)
+
+
+def ParamsToString(groups: List[ParameterSetGroup], tpr: str, gmx: str, num_trials: int,
+                   loop_var: str = "i", nsteps: int = 15000, resetstep: int = 10000, tab_increment: int = 2) -> str:
+    result: str = _addHeader(tpr, nsteps, resetstep)
+    result += "\n\n" + "#" * 80 + "\n\n"
+    result += _ProcessAllGroups(groups, loop_var, gmx, num_trials, tab_increment=tab_increment)
+    result += "\n\nexit\n"
+    return result
+
+
+def WriteRunScript(file: str, content: str):
+    """
+        TODO error handling.
+    """
+    with open(file, 'wt') as fout:
+        fout.write(content)

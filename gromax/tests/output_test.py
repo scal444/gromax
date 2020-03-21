@@ -1,6 +1,6 @@
 import unittest
 from unittest import mock
-from gromax.output import _serializeParams, _serializeConcurrentGroup, _incrementLines, _wrapInLoop
+from gromax.output import _serializeParams, _serializeConcurrentGroup, _incrementLines, _wrapInLoop, ParamsToString
 from gromax.output import _injectTpr, _injectFileNaming, _ProcessSingleGroup, _addDirectoryHandling, _ProcessAllGroups
 
 
@@ -156,13 +156,16 @@ class ProcessSingleGroupTest(unittest.TestCase):
 
     def testProcessSingleGroup(self):
         self.maxDiff = None
-        result = _ProcessSingleGroup(self.params, "gmx mdrun", "i", 3, 2)
+        result = _ProcessSingleGroup(self.params, "gmx mdrun", "i", 3, resetstep="${resetstep}", nsteps="${nsteps}",
+                                     tab_increment=2)
         expected: str = (
             "for i in {1..3}; do\n"
             "  trialdir=${workdir}/T${i}\n"
             "  cd $trialdir\n"
-            "  gmx mdrun -deffnm group_${group}_trial_${i}_component_1 -p1 v1 -p2 v2 -s ${tpr} &\n"
-            "  gmx mdrun -deffnm group_${group}_trial_${i}_component_2 -p3 -p4 -s ${tpr}\n"
+            "  gmx mdrun -deffnm group_${group}_trial_${i}_component_1 -nsteps ${nsteps} " 
+            "-p1 v1 -p2 v2 -resetstep ${resetstep} -s ${tpr} &\n"
+            "  gmx mdrun -deffnm group_${group}_trial_${i}_component_2 -nsteps ${nsteps} " 
+            "-p3 -p4 -resetstep ${resetstep} -s ${tpr}\n"
             "  cd ${workdir}\n"
             "done"
         )
@@ -183,4 +186,14 @@ class ProcessAllGroupsTest(unittest.TestCase):
             "group=3\n"
             "placeholder loop text\n\n\n"
         )
+        self.assertEqual(result, expected)
+
+
+class ParamsToStringTest(unittest.TestCase):
+    @mock.patch("gromax.output._ProcessAllGroups")
+    def testParamsToString(self, mock_process):
+        mock_process.return_value = "mock body"
+        result = ParamsToString([[], []], "mytpr.tpr", "gmx mdrun", 3, "i", 15000, 10000)
+        expected = "#!/bin/bash\n\ntpr=mytpr.tpr\nnsteps=15000\nresetstep=10000\n\n" + "#" * 80 + \
+                   "\n\nmock body\n\nexit\n"
         self.assertEqual(result, expected)
