@@ -1,5 +1,7 @@
 import unittest
+from unittest import mock
 from gromax.output import _serializeParams, _serializeConcurrentGroup, _incrementLines, _wrapInLoop
+from gromax.output import _injectTpr, _injectFileNaming, _ProcessSingleGroup, _addDirectoryHandling, _ProcessAllGroups
 
 
 class SerializeParamsTest(unittest.TestCase):
@@ -32,7 +34,7 @@ class SerializeParamsTest(unittest.TestCase):
 
     def testPrependGmx(self):
         params = {"pme": "gpu", "maxh": 3.5}
-        self.assertEqual(_serializeParams(params, gmx="gmx_mpi"), "gmx_mpi -maxh 3.5 -pme gpu")
+        self.assertEqual(_serializeParams(params, prepend="gmx_mpi"), "gmx_mpi -maxh 3.5 -pme gpu")
 
 
 class SerializeConcurrentGroupTest(unittest.TestCase):
@@ -55,16 +57,52 @@ class SerializeConcurrentGroupTest(unittest.TestCase):
         self.assertEqual("", _serializeConcurrentGroup([]))
 
     def testMultiGroup(self):
-        expected: str = "-nt 4 -pinoffset 0&\n-nt 4 -pinoffset 4&\n-nt 4 -pinoffset 8"
+        expected: str = "-nt 4 -pinoffset 0 &\n-nt 4 -pinoffset 4 &\n-nt 4 -pinoffset 8"
         self.assertEqual(_serializeConcurrentGroup(self.param_group), expected)
 
     def testPrependGmx(self):
-        expected: str = "gmx_mpi -nt 4 -pinoffset 0&\ngmx_mpi -nt 4 -pinoffset 4&\ngmx_mpi -nt 4 -pinoffset 8"
-        self.assertEqual(_serializeConcurrentGroup(self.param_group, gmx="gmx_mpi"), expected)
+        expected: str = "gmx_mpi -nt 4 -pinoffset 0 &\ngmx_mpi -nt 4 -pinoffset 4 &\ngmx_mpi -nt 4 -pinoffset 8"
+        self.assertEqual(_serializeConcurrentGroup(self.param_group, prepend="gmx_mpi"), expected)
+
+
+class InjectionTest(unittest.TestCase):
+
+    def setUp(self):
+        self.base = [{"param1": "val1"}, {"param1": "val1"}]
+
+    def testInjectTprWorks(self):
+        _injectTpr(self.base)
+        expected = [{"param1": "val1", "s": "${tpr}"}, {"param1": "val1", "s": "${tpr}"}]
+        self.assertCountEqual(self.base, expected)
+
+    def testInjectTprCustomNaming(self):
+        _injectTpr(self.base, placeholder="${placeholder}")
+        expected = [{"param1": "val1", "s": "${placeholder}"}, {"param1": "val1", "s": "${placeholder}"}]
+        self.assertCountEqual(self.base, expected)
+
+    def testInjectFileNamingWorks(self):
+        _injectFileNaming(self.base)
+        expected = [
+            {"param1": "val1", "deffnm": "group_${group}_trial_${i}_component_1"},
+            {"param1": "val1", "deffnm": "group_${group}_trial_${i}_component_2"}
+        ]
+        self.assertCountEqual(self.base, expected)
+
+    def testInjectFileCustomName(self):
+        _injectFileNaming(self.base, group_placeholder="alt", trial_placeholder="${j}")
+        expected = [
+            {"param1": "val1", "deffnm": "group_alt_trial_${j}_component_1"},
+            {"param1": "val1", "deffnm": "group_alt_trial_${j}_component_2"}
+        ]
+        self.assertCountEqual(self.base, expected)
+
+    def testInjectEmptyFileName(self):
+        empty = []
+        _injectFileNaming(empty)
+        self.assertEqual([], empty)
 
 
 class IncrementLinesTest(unittest.TestCase):
-
     def testNoInput(self):
         self.assertEqual(_incrementLines("", 1), "")
 
@@ -87,6 +125,21 @@ class IncrementLinesTest(unittest.TestCase):
         self.assertEqual(expected, _incrementLines(multi_lines, 3))
 
 
+class AddDirectoryHandlingTest(unittest.TestCase):
+    def setUp(self):
+        self.base = "some string\nother string"
+
+    def testAddDirectoriesBasic(self):
+        result = _addDirectoryHandling(self.base)
+        expected = "trialdir=${workdir}/T${i}\ncd $trialdir\nsome string\nother string\ncd ${workdir}"
+        self.assertEqual(result, expected)
+
+    def testAddDirectoriesCustom(self):
+        result = _addDirectoryHandling(self.base, workdir="${placeholder}", trial_placeholder="${j}")
+        expected = "trialdir=${placeholder}/T${j}\ncd $trialdir\nsome string\nother string\ncd ${placeholder}"
+        self.assertEqual(result, expected)
+
+
 class WrapInLoopTest(unittest.TestCase):
     def testWrapEmptyLoop(self):
         self.assertEqual(_wrapInLoop("", "i", 5), "for i in {1..5}; do\n\ndone")
@@ -95,3 +148,39 @@ class WrapInLoopTest(unittest.TestCase):
         lines: str = "line 1\n  line 2 incremented"
         expected: str = "for var in {1..$trials}; do\n   line 1\n     line 2 incremented\ndone"
         self.assertEqual(expected, _wrapInLoop(lines, "var", "$trials", tab_increment=3))
+
+
+class ProcessSingleGroupTest(unittest.TestCase):
+    def setUp(self):
+        self.params = [{"p1": "v1", "p2": "v2"}, {"p3": True, "p4": None}]
+
+    def testProcessSingleGroup(self):
+        self.maxDiff = None
+        result = _ProcessSingleGroup(self.params, "gmx mdrun", "i", 3, 2)
+        expected: str = (
+            "for i in {1..3}; do\n"
+            "  trialdir=${workdir}/T${i}\n"
+            "  cd $trialdir\n"
+            "  gmx mdrun -deffnm group_${group}_trial_${i}_component_1 -p1 v1 -p2 v2 -s ${tpr} &\n"
+            "  gmx mdrun -deffnm group_${group}_trial_${i}_component_2 -p3 -p4 -s ${tpr}\n"
+            "  cd ${workdir}\n"
+            "done"
+        )
+        self.assertEqual(result, expected)
+
+
+class ProcessAllGroupsTest(unittest.TestCase):
+    @mock.patch("gromax.output._ProcessSingleGroup")
+    def testProcessAllGroups(self, mock_process):
+        groups = [[], [], []]
+        mock_process.return_value = "placeholder loop text"
+        result = _ProcessAllGroups(groups, "i", "gmx mdrun", 5)
+        expected = (
+            "group=1\n"
+            "placeholder loop text\n\n\n"
+            "group=2\n"
+            "placeholder loop text\n\n\n"
+            "group=3\n"
+            "placeholder loop text\n\n\n"
+        )
+        self.assertEqual(result, expected)

@@ -1,8 +1,9 @@
+from copy import deepcopy
 from gromax.combination_generator import ParameterSet, ParameterSetGroup
 from typing import Any, List
 
 
-def _serializeParams(params: ParameterSet, gmx: str = None) -> str:
+def _serializeParams(params: ParameterSet, prepend: str = None) -> str:
     """
         Turn dictionary of parameters into a string. Orders based on internal python sorting of keys. If the gmx
         parameter is specified, will prepend the contents.
@@ -11,8 +12,8 @@ def _serializeParams(params: ParameterSet, gmx: str = None) -> str:
         {"ntomp": 80} as input will yield a string '-ntomp 80'
     """
     kvs: List[str] = []
-    if gmx:
-        kvs.append(gmx)
+    if prepend:
+        kvs.append(prepend)
     for key in sorted(params):
         val: Any = params[key]
         if val is not False:
@@ -25,17 +26,17 @@ def _serializeParams(params: ParameterSet, gmx: str = None) -> str:
     return " ".join(kvs)
 
 
-def _serializeConcurrentGroup(param_group: ParameterSetGroup, gmx: str = None) -> str:
+def _serializeConcurrentGroup(param_group: ParameterSetGroup, prepend: str = None) -> str:
     """
         Turn a concurrent group of parameters into a line separated bash string, with ampersands to send the initial
         processes to background for concurrent execution.
 
-        Optionally will prepend contents of gmx to each line.
+        Optionally will prepend/append contents of prepend/append variables to each line.
     """
     param_lines: List[str] = []
     for params in param_group:
-        param_lines.append(_serializeParams(params, gmx))
-    return "&\n".join(param_lines)
+        param_lines.append(_serializeParams(params, prepend))
+    return " &\n".join(param_lines)
 
 
 def _incrementLines(lines: str, amount: int) -> str:
@@ -56,6 +57,26 @@ def _incrementLines(lines: str, amount: int) -> str:
     return " " * amount + padded_lines
 
 
+def _injectFileNaming(param_group: ParameterSetGroup, group_placeholder: str = "${group}",
+                      trial_placeholder: str = "${i}"):
+    for component_ID, param in enumerate(param_group):
+        param["deffnm"] = "group_{}_trial_{}_component_{}".format(group_placeholder, trial_placeholder,
+                                                                  1 + component_ID)
+
+
+def _injectTpr(param_group: ParameterSetGroup, placeholder: str = "${tpr}"):
+    for params in param_group:
+        params["s"] = placeholder
+
+
+def _addDirectoryHandling(params: str, workdir: str = "${workdir}", trial_placeholder: str = "${i}") -> str:
+    return "\n".join([
+        "trialdir={}/T{}\ncd $trialdir".format(workdir, trial_placeholder),
+        params,
+        "cd {}".format(workdir)
+    ])
+
+
 def _wrapInLoop(serialized_group: str, loop_variable: str, count: Any, tab_increment=2) -> str:
     """
         Creates a bash for loop around a string, with the format
@@ -72,5 +93,26 @@ def _wrapInLoop(serialized_group: str, loop_variable: str, count: Any, tab_incre
     return "\n".join((base, tabbed_lines, "done"))
 
 
-def _SerializeAllGroups(groups: List[ParameterSetGroup]) -> str:
-    pass
+def _ProcessSingleGroup(param_group: ParameterSetGroup, gmx: str, loop_var: str,
+                        count: Any, tab_increment: int) -> str:
+    param_group_copy: ParameterSetGroup = deepcopy(param_group)
+    _injectTpr(param_group_copy)
+    _injectFileNaming(param_group_copy)
+    serialized: str = _serializeConcurrentGroup(param_group_copy, prepend=gmx)
+    serialized_with_dir_handling: str = _addDirectoryHandling(serialized, )
+    return _wrapInLoop(serialized_with_dir_handling, loop_var, count, tab_increment=tab_increment)
+
+
+def _ProcessAllGroups(groups: List[ParameterSetGroup], loop_variable: str, gmx: str, count: Any,
+                      tab_increment: int = 2) -> str:
+    """
+        Creates the body of a bash script to run groups of concurrent gromacs simulations. Each group is wrapped in
+        a loop.
+    """
+    result: str = ""
+    for i, group in enumerate(groups):
+        group_num: int = i + 1
+        result += "group={}\n".format(group_num)
+        result += _ProcessSingleGroup(group, gmx, loop_variable, count, tab_increment)
+        result += "\n\n\n"
+    return result
