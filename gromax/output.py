@@ -1,3 +1,5 @@
+import logging
+import os
 from copy import deepcopy
 from gromax.combination_generator import ParameterSet, ParameterSetGroup
 from typing import Any, List
@@ -75,9 +77,9 @@ def _injectTiming(param_group: ParameterSetGroup, nsteps: str, resetstep: str):
         params["resetstep"] = resetstep
 
 
-def _addDirectoryHandling(params: str, workdir: str = "${workdir}", trial_placeholder: str = "${i}") -> str:
+def _addDirectoryHandling(params: str, workdir: str = "${groupdir}", trial_placeholder: str = "${i}") -> str:
     return "\n".join([
-        "trialdir={}/T{}\ncd $trialdir".format(workdir, trial_placeholder),
+        "trialdir={}/T{}\nmkdir $trialdir\ncd $trialdir".format(workdir, trial_placeholder),
         params,
         "cd {}".format(workdir)
     ])
@@ -105,7 +107,7 @@ def _ProcessSingleGroup(param_group: ParameterSetGroup, gmx: str, loop_var: str,
     _injectTpr(param_group_copy)
     _injectFileNaming(param_group_copy)
     _injectTiming(param_group_copy, nsteps, resetstep)
-    serialized: str = _serializeConcurrentGroup(param_group_copy, prepend=gmx)
+    serialized: str = _serializeConcurrentGroup(param_group_copy, prepend=gmx) + "\nwait"
     serialized_with_dir_handling: str = _addDirectoryHandling(serialized, )
     return _wrapInLoop(serialized_with_dir_handling, loop_var, count, tab_increment=tab_increment)
 
@@ -120,21 +122,24 @@ def _ProcessAllGroups(groups: List[ParameterSetGroup], loop_variable: str, gmx: 
     for i, group in enumerate(groups):
         group_num: int = i + 1
         result += "group={}\n".format(group_num)
+        result += "groupdir=$workdir/group_{}\n".format(group_num)
+        result += "mkdir $groupdir\n"
+        result += "cd $groupdir\n"
         result += _ProcessSingleGroup(group, gmx, loop_variable, count, nsteps=nsteps, resetstep=resetstep,
                                       tab_increment=tab_increment)
         result += "\n\n\n"
     return result
 
 
-def _addHeader(tpr, nsteps, resetstep) -> str:
-    return "#!/bin/bash\n\ntpr={}\nnsteps={}\nresetstep={}".format(tpr, nsteps, resetstep)
+def _addHeader(gmx, tpr, nsteps, resetstep) -> str:
+    return "#!/bin/bash\n\ngmx='{}'\ntpr={}\nnsteps={}\nresetstep={}\nworkdir=`pwd`".format(gmx, tpr, nsteps, resetstep)
 
 
 def ParamsToString(groups: List[ParameterSetGroup], tpr: str, gmx: str, num_trials: int,
                    loop_var: str = "i", nsteps: int = 15000, resetstep: int = 10000, tab_increment: int = 2) -> str:
-    result: str = _addHeader(tpr, nsteps, resetstep)
+    result: str = _addHeader(gmx, tpr, nsteps, resetstep)
     result += "\n\n" + "#" * 80 + "\n\n"
-    result += _ProcessAllGroups(groups, loop_var, gmx, num_trials, tab_increment=tab_increment)
+    result += _ProcessAllGroups(groups, loop_var, "$gmx", num_trials, tab_increment=tab_increment)
     result += "\n\nexit\n"
     return result
 
@@ -143,5 +148,7 @@ def WriteRunScript(file: str, content: str):
     """
         TODO error handling.
     """
-    with open(file, 'wt') as fout:
+    path: str = os.path.abspath(file)
+    with open(path, 'wt') as fout:
+        logging.info("Writing run run script to {}".format(path))
         fout.write(content)
