@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import argparse
 import logging
 import sys
@@ -89,6 +90,7 @@ def gromax():
     parsed_args: argparse.Namespace = parseArgs(sys.argv[1:])
     workflow: Callable[[argparse.Namespace], None] = _selectWorkflow(parsed_args)
     workflow(parsed_args)
+    sys.exit(0)
 
 
 if __name__ == "__main__":

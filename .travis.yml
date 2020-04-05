@@ -8,6 +8,8 @@ python:
 
 install:
   - pip install codecov
+  - pip install setuptools
+  - pip install .
 
 script:
   - python -m unittest discover -b -p "*_test.py"
