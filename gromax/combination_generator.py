@@ -153,7 +153,7 @@ def _createVersionedOptions(base_opts: ParameterSet, hw_config: HardwareConfig, 
     # TODO double-check pme and bonded compatibility. Can you have bonded and not pme?
     if gmx_version >= "2019":
         options = applyOptionToAll(options, "bonded", ["cpu", "gpu"])
-
+    # TODO add 'update' for 2020.
     # Add gputasks
     for opt in options:
         if opt.get("nb") == "gpu":
