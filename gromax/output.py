@@ -79,7 +79,7 @@ def _injectTiming(param_group: ParameterSetGroup, nsteps: str, resetstep: str):
 
 def _addDirectoryHandling(params: str, workdir: str = "${groupdir}", trial_placeholder: str = "${i}") -> str:
     return "\n".join([
-        "trialdir={}/T{}\nmkdir $trialdir\ncd $trialdir".format(workdir, trial_placeholder),
+        "trialdir={}/trial_{}\nmkdir $trialdir\ncd $trialdir".format(workdir, trial_placeholder),
         params,
         "cd {}".format(workdir)
     ])

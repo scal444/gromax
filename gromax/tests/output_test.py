@@ -131,14 +131,14 @@ class AddDirectoryHandlingTest(unittest.TestCase):
 
     def testAddDirectoriesBasic(self):
         result = _addDirectoryHandling(self.base)
-        expected = "trialdir=${groupdir}/T${i}\nmkdir $trialdir\ncd $trialdir\nsome string\nother string\ncd ${" \
+        expected = "trialdir=${groupdir}/trial_${i}\nmkdir $trialdir\ncd $trialdir\nsome string\nother string\ncd ${" \
                    "groupdir}"
         self.assertEqual(result, expected)
 
     def testAddDirectoriesCustom(self):
         result = _addDirectoryHandling(self.base, workdir="${placeholder}", trial_placeholder="${j}")
-        expected = "trialdir=${placeholder}/T${j}\nmkdir $trialdir\ncd $trialdir\nsome string\nother string\ncd ${" \
-                   "placeholder}"
+        expected = "trialdir=${placeholder}/trial_${j}\nmkdir $trialdir\ncd $trialdir\nsome string\nother string\n" \
+                   "cd ${placeholder}"
         self.assertEqual(result, expected)
 
 
@@ -162,7 +162,7 @@ class ProcessSingleGroupTest(unittest.TestCase):
                                      tab_increment=2)
         expected: str = (
             "for i in {1..3}; do\n"
-            "  trialdir=${groupdir}/T${i}\n"
+            "  trialdir=${groupdir}/trial_${i}\n"
             "  mkdir $trialdir\n"
             "  cd $trialdir\n"
             "  gmx mdrun -deffnm group_${group}_trial_${i}_component_1 -nsteps ${nsteps} " 
