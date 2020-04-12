@@ -17,6 +17,17 @@ regexOp = Callable[[str], Optional[Dict]]
 # Possible data types for a command line parameter
 valueType = Union[float, str, bool, int]
 
+# regex for gromacs log full command line argument.
+_COMMAND_LINE_RE = r"^Command line:(.)*\n(.)+\n"
+
+def _getCommandLine(contents: str) -> Optional[str]:
+    """
+        Parses text for the line with reported CLI input.
+    """
+    search = re.search(_COMMAND_LINE_RE, contents, flags=re.MULTILINE)
+    if search is None:
+        return search
+    return search.group().split("\n")[1]
 
 def _typeOfParam(param: str) -> Type:
     """
@@ -91,15 +102,14 @@ def _commandInputRegexOp(contents: str) -> Optional[Dict]:
 
         Raises ValueError for an unexpected key or malformed value.
     """
-    search = re.search(r"^Command line:(.)*\n(.)+\n", contents, flags=re.MULTILINE)
-    if search is None:
-        return search
 
-    # First isolate the command line
-    line: str = search.group().split("\n")[1]
-    # Trim off the first part of the string containing gmx/gmx_mpi mdrun
+    line: Optional[str] = _getCommandLine(contents)
+    if line is None:
+        return line
+
     result: Dict = {}
 
+    # Trim off the first part of the string containing gmx/gmx_mpi mdrun
     # Note that if there are no -dash parameters this will be empty and we return an empty dict.
     split: List[str] = line.split("-")[1:]
     for item in split:
@@ -112,6 +122,13 @@ def _commandInputRegexOp(contents: str) -> Optional[Dict]:
         val_type: Type = _typeOfParam(key)
         result[key] = _convert(val, val_type)
     return result
+
+
+def _fullCommandRegexOp(contents: str) -> Optional[Dict[str, str]]:
+    line: Optional[str] = _getCommandLine(contents)
+    if line is None:
+        return line
+    return {"full_command_line": line}
 
 
 def _performanceRegexOp(contents: str) -> Optional[Dict]:
@@ -158,5 +175,5 @@ class LogParser(object):
 
 
 def BasicParser() -> LogParser:
-    parser: LogParser = LogParser(ops=(_commandInputRegexOp, _performanceRegexOp))
+    parser: LogParser = LogParser(ops=(_commandInputRegexOp, _performanceRegexOp, _fullCommandRegexOp))
     return parser

@@ -1,6 +1,6 @@
 import unittest
 
-from gromax.log_parser import _performanceRegexOp, _typeOfParam, _convert, _commandInputRegexOp
+from gromax.log_parser import _performanceRegexOp, _typeOfParam, _convert, _commandInputRegexOp, _fullCommandRegexOp
 from gromax.log_parser import LogParser, BasicParser
 
 
@@ -103,6 +103,17 @@ class PerformanceParserTest(unittest.TestCase):
         self.assertIsNone(_performanceRegexOp("Some random text"))
 
 
+class FullCommandRegexOpTest(unittest.TestCase):
+    match_cmd = "Some text\nCommand line:\ngmx mdrun -deffnm test -maxh 5 -ntomp 4\n\n"
+
+    def testEmpty(self):
+        self.assertIsNone(_fullCommandRegexOp("some random text"))
+
+    def testContents(self):
+        expected = {"full_command_line": "gmx mdrun -deffnm test -maxh 5 -ntomp 4"}
+        self.assertEqual(_fullCommandRegexOp(self.match_cmd), expected)
+
+
 class LogParserTest(unittest.TestCase):
 
     match_perf = "some text\nPerformance: 25.12 ns/day\nOther text\n"
@@ -111,7 +122,7 @@ class LogParserTest(unittest.TestCase):
 
     def testBasicParserContent(self):
         parser = BasicParser()
-        self.assertEqual(len(parser._operations), 2)
+        self.assertEqual(len(parser._operations), 3)
 
     def testNoOps(self):
         parser = LogParser()
@@ -131,11 +142,10 @@ class LogParserTest(unittest.TestCase):
         parser = LogParser()
         parser.addOp(_commandInputRegexOp)
         parser.addOp(_performanceRegexOp)
-
         expected = {
             "performance": 25.12,
             "deffnm": "test",
             "maxh": 5.0,
-            "ntomp": 4
+            "ntomp": 4,
         }
         self.assertDictEqual(parser.parse(self.contents), expected)
