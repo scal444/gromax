@@ -149,6 +149,10 @@ def WriteRunScript(file: str, content: str):
         TODO error handling.
     """
     path: str = os.path.abspath(file)
-    with open(path, 'wt') as fout:
-        logging.info("Writing run run script to {}".format(path))
-        fout.write(content)
+    try:
+        with open(path, 'wt') as fout:
+            logging.info("Writing run run script to {}".format(path))
+            fout.write(content)
+    except IOError as e:
+        logging.error("Unable to open file for writing: {}".format(e))
+        raise SystemExit(1)

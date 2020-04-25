@@ -2,6 +2,7 @@ import unittest
 from unittest import mock
 from gromax.output import _serializeParams, _serializeConcurrentGroup, _incrementLines, _wrapInLoop, ParamsToString
 from gromax.output import _injectTpr, _injectFileNaming, _ProcessSingleGroup, _addDirectoryHandling, _ProcessAllGroups
+from gromax.output import WriteRunScript
 
 
 class SerializeParamsTest(unittest.TestCase):
@@ -207,3 +208,16 @@ class ParamsToStringTest(unittest.TestCase):
         expected = "#!/bin/bash\n\ngmx='gmx mdrun'\ntpr=mytpr.tpr\nnsteps=15000\nresetstep=10000\nworkdir=`pwd`\n\n" + \
                    "#" * 80 + "\n\nmock body\n\nexit\n"
         self.assertEqual(result, expected)
+
+
+class WriteOutputTest(unittest.TestCase):
+
+    def testGoodWrite(self):
+        with mock.patch("builtins.open", mock.mock_open()):
+            WriteRunScript("some_file", "content")
+
+    def testBadWrite(self):
+        with mock.patch("builtins.open", mock.mock_open()) as mock_file:
+            mock_file.side_effect = FileExistsError()
+            with self.assertRaises(SystemExit):
+                WriteRunScript("some_file", "content")
