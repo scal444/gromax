@@ -44,6 +44,9 @@ class IDParsingTests(unittest.TestCase):
     def testSizeThreeValidColonStrideOther(self):
         self.assertEqual(gmx._parseIDString("1:3:12"), [1, 4, 7, 10])
 
+    def testValidSingleInt(self):
+        self.assertEqual(gmx._parseIDString("5"), [5])
+
     def testInvalidCommas(self):
         with self.assertRaises(ValueError):
             gmx._parseIDString("0,,,3")
@@ -55,3 +58,8 @@ class IDParsingTests(unittest.TestCase):
     def testInvalidDash(self):
         with self.assertRaises(ValueError):
             gmx._parseIDString("3-")
+
+    def testOtherInvalid(self):
+        with self.assertRaises(ValueError):
+            gmx._parseIDString("a")
+
