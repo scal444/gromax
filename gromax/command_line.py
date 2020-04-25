@@ -7,6 +7,40 @@ _DESCRIPTION = "Some program description"
 _EPILOG = "Some program epilogue"
 
 
+def parseIDString(ids: str) -> List[int]:
+    """
+        Parses a string to determine CPU or GPU IDs. Handles the following formats:
+
+        Comma separated integers
+            0,1,2,3
+        Colon or dashed range
+            0:31
+            0-31
+        Colon range with stride
+            0:2:31 == 0,2,4,....,30
+    """
+    try:
+        return [int(ids)]
+    except ValueError:
+        pass
+
+    if ',' in ids:
+        return [int(i) for i in ids.split(',')]
+    elif '-' in ids:
+        split: List[str] = ids.split("-")
+        if len(split) == 2:
+            return list(range(int(split[0]), int(split[1]) + 1))
+    elif ':' in ids:
+        split: List[str] = ids.split(":")
+        stride: int = 1
+        if len(split) == 3:
+            stride = int(split[1])
+        if len(split) == 2 or len(split) == 3:
+            # This takes the first and last part of the split, handling size 2 and 3.
+            return list(range(int(split[0]), int(split[-1]) + 1, stride))
+    raise ValueError("Invalid ID string '{}'".format(ids))
+
+
 def _buildParser() -> argparse.ArgumentParser:
     """
         Constructs and returns the argument parser for gromax.

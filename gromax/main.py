@@ -3,7 +3,7 @@ import argparse
 import logging
 import sys
 from gromax.combination_generator import createRunOptionsForConfigGroup
-from gromax.command_line import parseArgs
+from gromax.command_line import parseArgs, parseIDString
 from gromax.hardware_config import HardwareConfig, generateConfigSplitOptions
 from gromax.output import ParamsToString, WriteRunScript
 from typing import Callable, List, Dict
@@ -12,45 +12,11 @@ from typing import Callable, List, Dict
 """
 
 
-def _parseIDString(ids: str) -> List[int]:
-    """
-        Parses a string to determine CPU or GPU IDs. Handles the following formats:
-
-        Comma separated integers
-            0,1,2,3
-        Colon or dashed range
-            0:31
-            0-31
-        Colon range with stride
-            0:2:31 == 0,2,4,....,30
-    """
-    try:
-        return [int(ids)]
-    except ValueError:
-        pass
-
-    if ',' in ids:
-        return [int(i) for i in ids.split(',')]
-    elif '-' in ids:
-        split: List[str] = ids.split("-")
-        if len(split) == 2:
-            return list(range(int(split[0]), int(split[1]) + 1))
-    elif ':' in ids:
-        split: List[str] = ids.split(":")
-        stride: int = 1
-        if len(split) == 3:
-            stride = int(split[1])
-        if len(split) == 2 or len(split) == 3:
-            # This takes the first and last part of the split, handling size 2 and 3.
-            return list(range(int(split[0]), int(split[-1]) + 1, stride))
-    raise ValueError("Invalid ID string '{}'".format(ids))
-
-
 def _executeGenerateWorkflow(args: argparse.Namespace) -> None:
     logging.info("Generating run options.")
     # Assign hardware config
-    hw_config: HardwareConfig = HardwareConfig(cpu_ids=_parseIDString(args.cpu_ids),
-                                               gpu_ids=_parseIDString(args.gpu_ids))
+    hw_config: HardwareConfig = HardwareConfig(cpu_ids=parseIDString(args.cpu_ids),
+                                               gpu_ids=parseIDString(args.gpu_ids))
     # generate options
     config_splits: List[List[HardwareConfig]] = generateConfigSplitOptions(hw_config)
     run_opts: List[List[Dict]] = []
