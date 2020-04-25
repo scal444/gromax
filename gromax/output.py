@@ -4,6 +4,8 @@ from copy import deepcopy
 from gromax.combination_generator import ParameterSet, ParameterSetGroup
 from typing import Any, List
 
+# TODO make ntrials a top-level parameter
+# TODO turn group_1, group_2... to group_${group}
 
 def _serializeParams(params: ParameterSet, prepend: str = None) -> str:
     """
@@ -146,7 +148,7 @@ def ParamsToString(groups: List[ParameterSetGroup], tpr: str, gmx: str, num_tria
 
 def WriteRunScript(file: str, content: str):
     """
-        TODO error handling.
+        Writes out the script to execute gromacs.
     """
     path: str = os.path.abspath(file)
     try:

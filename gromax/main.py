@@ -15,8 +15,11 @@ from typing import Callable, List, Dict
 def _executeGenerateWorkflow(args: argparse.Namespace) -> None:
     logging.info("Generating run options.")
     # Assign hardware config
-    hw_config: HardwareConfig = HardwareConfig(cpu_ids=parseIDString(args.cpu_ids),
-                                               gpu_ids=parseIDString(args.gpu_ids))
+    cpu_ids: List[int] = parseIDString(args.cpu_ids)
+    logging.info("CPU IDs: {}".format(cpu_ids))
+    gpu_ids: List[int] = parseIDString(args.gpu_ids)
+    logging.info("GPU IDs: {}".format(gpu_ids))
+    hw_config: HardwareConfig = HardwareConfig(cpu_ids=cpu_ids, gpu_ids=gpu_ids)
     # generate options
     config_splits: List[List[HardwareConfig]] = generateConfigSplitOptions(hw_config)
     run_opts: List[List[Dict]] = []

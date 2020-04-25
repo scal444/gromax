@@ -10,7 +10,7 @@ class CommandLineInputTest(unittest.TestCase):
 
     def testValidGromacsVersionsAccepted(self):
         # TODO import this when centralized and loop over valid ones
-        valid_options = ["2016", "2018", "2019", "2020"]
+        valid_options = ["2016", "2018", "2019"]
         for opt in valid_options:
             parseArgs(["generate", "--gmx_version", opt, "--cpu_ids", 0, "--gpu_ids", 0, "--run_file",  "test.sh"])
 

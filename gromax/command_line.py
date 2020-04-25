@@ -71,7 +71,7 @@ def _failWithError(err: str):
 def _checkArgs(args: argparse.Namespace) -> None:
     if not args.mode:
         _failWithError("'mode' is a required positional argument - options are 'generate', 'execute', 'analyze'")
-    good_versions: Iterable(str) = ("2016", "2018", "2019", "2020")
+    good_versions: Iterable(str) = ("2016", "2018", "2019")
     if args.gmx_version not in good_versions:
         _failWithError("Invalid gmx version {}, must be one of {}".format(args.gmx_version, good_versions))
     if not args.cpu_ids:
