@@ -12,15 +12,17 @@ class CommandLineInputTest(unittest.TestCase):
         # TODO import this when centralized and loop over valid ones
         valid_options = ["2016", "2018", "2019", "2020"]
         for opt in valid_options:
-            parseArgs(["generate", "--gmx_version", opt])
+            parseArgs(["generate", "--gmx_version", opt, "--cpu_ids", 0, "--gpu_ids", 0, "--run_file",  "test.sh"])
 
     def testExitsWithVersion(self):
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(SystemExit) as sysexit:
             parseArgs(["--version"])
+        self.assertEqual(sysexit.exception.code, 0)
 
     def testInvalidModeCaught(self):
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(SystemExit) as sysexit:
             parseArgs(["some_command"])
+        self.assertGreater(sysexit.exception.code, 0)
 
 
 class IDParsingTests(unittest.TestCase):

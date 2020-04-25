@@ -1,6 +1,6 @@
 import argparse
 import logging
-from typing import List
+from typing import List, Iterable
 
 # File constants.
 _DESCRIPTION = "Some program description"
@@ -21,7 +21,7 @@ def parseIDString(ids: str) -> List[int]:
     """
     try:
         return [int(ids)]
-    except ValueError:
+    except (TypeError, ValueError):
         pass
 
     if ',' in ids:
@@ -46,10 +46,8 @@ def _buildParser() -> argparse.ArgumentParser:
         Constructs and returns the argument parser for gromax.
     """
     parser: argparse.ArgumentParser = argparse.ArgumentParser(description=_DESCRIPTION, epilog=_EPILOG)
-    parser.add_argument('mode', type=str, help='The gromax operation to run. "generate", "execute", or "analyze"',
-                        choices=("generate", "execute", "analyze"))
-    parser.add_argument('--gmx_version', type=str, help='Gromacs version - "2016", "2017", "2018", or "2019"',
-                        choices=("2016", "2018", "2019", "2020"))
+    parser.add_argument('mode', type=str, help='The gromax operation to run. "generate", "execute", or "analyze"')
+    parser.add_argument('--gmx_version', type=str, help='Gromacs version - "2016", "2018", or "2019"')
     parser.add_argument("--run_file", type=str, help="path to bash benchmark script to create.")
     parser.add_argument("--directory", type=str, help="path to execution/analysis directory.")
     parser.add_argument("--version", action="version", version="alpha")
@@ -65,9 +63,23 @@ def _buildParser() -> argparse.ArgumentParser:
     return parser
 
 
-# TODO type this
+def _failWithError(err: str):
+    logging.error(err)
+    raise SystemExit(1)
+
+
 def _checkArgs(args: argparse.Namespace) -> None:
-    pass
+    if not args.mode:
+        _failWithError("'mode' is a required positional argument - options are 'generate', 'execute', 'analyze'")
+    good_versions: Iterable(str) = ("2016", "2018", "2019", "2020")
+    if args.gmx_version not in good_versions:
+        _failWithError("Invalid gmx version {}, must be one of {}".format(args.gmx_version, good_versions))
+    if not args.cpu_ids:
+        _failWithError("--cpu_ids is required")
+    if not args.gpu_ids:
+        _failWithError("--gpu_ids is required")
+    if not args.run_file:
+        _failWithError("--run_file argument is required")
 
 
 def parseArgs(args: List[str]) -> argparse.Namespace:
