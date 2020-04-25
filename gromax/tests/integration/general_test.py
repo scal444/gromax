@@ -10,6 +10,12 @@ class FailureTests(unittest.TestCase):
                 gmxentry()
             self.assertGreater(sysexit.exception.code, 0)
 
+    def testBadMode(self):
+        with mock.patch("sys.argv", ["gromax", "invalid"]):
+            with self.assertRaises(SystemExit) as sysexit:
+                gmxentry()
+            self.assertGreater(sysexit.exception.code, 0)
+
 
 class NonExecutingTests(unittest.TestCase):
     def testVersionWorks(self):
