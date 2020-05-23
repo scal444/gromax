@@ -6,7 +6,7 @@ import random
 
 class StdChecker(object):
     """
-        class that stdout or stderris redirected to for testing purposes. Modified from
+        class that stdout or stderr is redirected to for testing purposes. Modified from
         http://pragmaticpython.com/2017/03/23/unittesting-print-statements/
     """
 
