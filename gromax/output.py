@@ -7,6 +7,7 @@ from typing import Any, List
 # TODO make ntrials a top-level parameter
 # TODO turn group_1, group_2... to group_${group}
 
+
 def _serializeParams(params: ParameterSet, prepend: str = None) -> str:
     """
         Turn dictionary of parameters into a string. Orders based on internal python sorting of keys. If the gmx

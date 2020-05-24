@@ -8,7 +8,7 @@ trialContent = Dict[int, str]
 # trial index to trial content
 groupContent = Dict[int, trialContent]
 # group index to group content
-allContent = Dict[int, groupContent]
+allDirectoryContent = Dict[int, groupContent]
 
 
 # Extraction methods to get index of a folder or file.
@@ -50,11 +50,13 @@ def _getGroupFoldersWithIndices(directory: str) -> Dict[int, str]:
     result: Dict[int, str] = {}
     folder_path: str
     for folder_path in os.listdir(directory):
-        # Treat each subdirectory as a group directory, but some might not be so it's ok to fail.
+        if "group_" not in folder_path:
+            logging.debug("Skipping folder {} - not a group folder".format(os.path.join(directory, folder_path)))
+            continue
         try:
-            result[_getGroupIndex(folder_path)] = folder_path
-        except (TypeError, ValueError):
-            logging.warning("Failed to parse: {}".format(directory))
+            result[_getGroupIndex(folder_path)] = os.path.join(directory, folder_path)
+        except (TypeError, ValueError) as e:
+            logging.warning("Failed to parse {}: {}".format(directory + '/' + folder_path, e))
 
     return result
 
@@ -63,11 +65,13 @@ def _getTrialFoldersWithIndices(directory: str) -> Dict[int, str]:
     result: Dict[int, str] = {}
     folder_path: str
     for folder_path in os.listdir(directory):
-        # Treat each subdirectory as a group directory, but some might not be so it's ok to fail.
+        if "trial_" not in folder_path:
+            logging.debug("Skipping folder {} - not a trial folder".format(os.path.join(directory, folder_path)))
+            continue
         try:
-            result[_getTrialIndex(folder_path)] = folder_path
-        except (TypeError, ValueError):
-            logging.warning("Failed to parse: {}".format(directory))
+            result[_getTrialIndex(folder_path)] = os.path.join(directory, folder_path)
+        except (TypeError, ValueError) as e:
+            logging.warning("Failed to parse {}: {}".format(directory + '/' + folder_path, e))
     return result
 
 
@@ -75,15 +79,18 @@ def _getComponentFoldersWithIndices(directory: str) -> Dict[int, str]:
     result: Dict[int, str] = {}
     file_path: str
     for file_path in os.listdir(directory):
+        if not file_path.endswith(".log"):
+            logging.debug("Skipping file {} - not a log file".format(os.path.join(directory, file_path)))
+            continue
         # Treat each subdirectory as a group directory, but some might not be so it's ok to fail.
         try:
-            result[_getComponentIndex(file_path)] = file_path
-        except (TypeError, ValueError):
-            logging.warning("Failed to parse: {}".format(directory))
+            result[_getComponentIndex(file_path)] = os.path.join(directory, file_path)
+        except (TypeError, ValueError) as e:
+            logging.warning("Failed to parse {}: {}".format(directory + '/' + file_path, e))
     return result
 
 
-def parseDirectoryStructure(directory: str) -> allContent:
+def parseDirectoryStructure(directory: str) -> allDirectoryContent:
     """
         Walks a directory tree and lists the log files within the structure as a nested dict, with the keys being
         0-based indices into the group, trial, or component, and the leaf values being component log file paths.
@@ -117,7 +124,7 @@ def parseDirectoryStructure(directory: str) -> allContent:
             },
          }
     """
-    result: allContent = {}
+    result: allDirectoryContent = {}
     group_index: int
     group_dir: str
     for group_index, group_dir in _getGroupFoldersWithIndices(directory).items():

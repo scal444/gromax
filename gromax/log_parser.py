@@ -20,6 +20,7 @@ valueType = Union[float, str, bool, int]
 # regex for gromacs log full command line argument.
 _COMMAND_LINE_RE = r"^Command line:(.)*\n(.)+\n"
 
+
 def _getCommandLine(contents: str) -> Optional[str]:
     """
         Parses text for the line with reported CLI input.
@@ -28,6 +29,7 @@ def _getCommandLine(contents: str) -> Optional[str]:
     if search is None:
         return search
     return search.group().split("\n")[1]
+
 
 def _typeOfParam(param: str) -> Type:
     """
@@ -41,6 +43,7 @@ def _typeOfParam(param: str) -> Type:
             ValueError, for unknown key
     """
     types: Dict = {
+        "npme": int,
         "ntmpi": int,
         "ntomp": int,
         "nsteps": int,
@@ -157,11 +160,11 @@ class LogParser(object):
         """
         self._operations.append(op)
 
-    def parse(self, contents: str) -> Dict:
+    def parse(self, contents: str) -> Dict[str, valueType]:
         """
             Apply all regex ops registered to the string, return in dict format.
         """
-        result: Dict = {}
+        result: Dict[str, valueType] = {}
         for op in self._operations:
             op_match: Optional[Dict] = op(contents)
             if op_match is None:

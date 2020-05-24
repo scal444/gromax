@@ -1,7 +1,10 @@
 #!/usr/bin/python
 import argparse
 import logging
+import os
 import sys
+from gromax.analysis import GromaxData, constructGromaxData, reportStatistics
+from gromax.file_io import parseDirectoryStructure, allDirectoryContent
 from gromax.combination_generator import createRunOptionsForConfigGroup
 from gromax.command_line import parseArgs, parseIDString
 from gromax.hardware_config import HardwareConfig, generateConfigSplitOptions
@@ -35,7 +38,17 @@ def _executeGenerateWorkflow(args: argparse.Namespace) -> None:
 
 
 def _executeAnalyzeWorkflow(args: argparse.Namespace) -> None:
-    raise NotImplementedError("Analysis not yet supported")
+    folder: str = args.directory
+    if folder is None:
+        logging.info("No directory specified using --directory, using current directory.")
+        folder = os.getcwd()
+    if not os.path.isdir(folder):
+        logging.error("Analysis path {} is not a directory".format(folder))
+        sys.exit(1)
+    logging.info("Analyzing gromax run results in directory {}.".format(folder))
+    directory_content: allDirectoryContent = parseDirectoryStructure(folder)
+    result_data: GromaxData = constructGromaxData(directory_content)
+    sys.stdout.write(reportStatistics(result_data.groupStatistics()))
 
 
 def _executeExecuteWorkflow(args: argparse.Namespace) -> None:
@@ -55,6 +68,9 @@ def _selectWorkflow(args: argparse.Namespace) -> Callable[[argparse.Namespace], 
 
 def gromax():
     logging.basicConfig(level=logging.INFO)
+    # debug logging
+    # logging.basicConfig(level=logging.DEBUG, format='%(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
+
     logging.info("Executing gromax.")
     parsed_args: argparse.Namespace = parseArgs(sys.argv[1:])
     workflow: Callable[[argparse.Namespace], None] = _selectWorkflow(parsed_args)

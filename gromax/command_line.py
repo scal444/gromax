@@ -69,6 +69,7 @@ def _failWithError(err: str):
 
 
 def _checkArgs(args: argparse.Namespace) -> None:
+    # TODO - some of these should only be required with certain modes
     good_modes: Iterable[str] = ("generate", "execute", "analyze")
     if args.mode not in good_modes:
         _failWithError("'mode' is a required positional argument - options are 'generate', 'execute', 'analyze'")
