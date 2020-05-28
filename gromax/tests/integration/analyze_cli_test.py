@@ -71,8 +71,6 @@ class AnalyzeTestSuccess(unittest.TestCase):
     def testFullRunSuccess(self):
         reference_folder_path = os.path.join(os.path.dirname(__file__), "testdata", "sample_run_dir")
         self.args.extend(["--directory", reference_folder_path])
-        # TODO remove once argument checking is better
-        self.args.extend(["--run_file", "test.sh", "--gmx_version", "2018", "--cpu_ids", 0, "--gpu_ids", 0])
         stdout = StringIO()
         with contextlib.redirect_stdout(stdout):
             rc = self._run_and_capture_output()

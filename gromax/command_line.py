@@ -68,11 +68,7 @@ def _failWithError(err: str):
     raise SystemExit(1)
 
 
-def _checkArgs(args: argparse.Namespace) -> None:
-    # TODO - some of these should only be required with certain modes
-    good_modes: Iterable[str] = ("generate", "execute", "analyze")
-    if args.mode not in good_modes:
-        _failWithError("'mode' is a required positional argument - options are 'generate', 'execute', 'analyze'")
+def _checkGenerateArgs(args: argparse.Namespace) -> None:
     good_versions: Iterable[str] = ("2016", "2018", "2019")
     if args.gmx_version not in good_versions:
         _failWithError("Invalid gmx version {}, must be one of {}".format(args.gmx_version, good_versions))
@@ -82,6 +78,15 @@ def _checkArgs(args: argparse.Namespace) -> None:
         _failWithError("--gpu_ids is required")
     if not args.run_file:
         _failWithError("--run_file argument is required")
+
+
+def _checkArgs(args: argparse.Namespace) -> None:
+    good_modes: Iterable[str] = ("generate", "execute", "analyze")
+    if args.mode not in good_modes:
+        _failWithError("'mode' is a required positional argument - options are 'generate', 'execute', 'analyze'")
+
+    if args.mode == "generate":
+        _checkGenerateArgs(args)
 
 
 def parseArgs(args: List[str]) -> argparse.Namespace:
