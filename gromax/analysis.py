@@ -4,8 +4,7 @@ import re
 # import pandas as pd
 from gromax.file_io import allDirectoryContent
 from gromax.log_parser import BasicParser
-from typing import Dict, List, Union, Optional, Any, Callable
-from copy import deepcopy
+from typing import Dict, List, Union, Any, Callable
 
 # Possible data types.
 dataPoint = Union[int, float, str, bool]
@@ -53,28 +52,14 @@ def _shareKeyVal(key: str, a: Dict, b: Dict) -> bool:
 
 
 def _commonKeyVals(a: Dict, b: Dict) -> Dict:
-    # Return the intersect of two dictionaries.
+    """ Returns the intersect of two dictionaries. """
     return {key: val for key, val in a.items() if _shareKeyVal(key, a, b)}
 
 
-def _collect():
-    pass
-
-
-def _differingKeys(a: Dict, b: Dict) -> Dict[List, Any]:
-    """
-        Given two dictionaries, returns a list of keys that are different between them.
-
-        Assumes that keys are identical between dicts.
-    """
-
-    result: Dict[List[Any]] = {}
-    for key, val in a.items():
-        pass
-    return result
-
-
 def _getGroupRunString(group: singleGroupData) -> str:
+    """
+        Returns the combined command line argument to dispatch all runs in a group trial.
+    """
     lines: List[str] = []
     for key in sorted(group[0].keys()):
         component: singleRunData = group[0][key]
@@ -83,6 +68,9 @@ def _getGroupRunString(group: singleGroupData) -> str:
 
 
 def _calculateTrialPerformance(trial: singleTrialData) -> float:
+    """
+        Collects the summed performances of each component run in a trial.
+    """
     components_sum: float = 0
     for _, component_content in trial.items():
         assert "performance" in component_content.keys()
@@ -93,6 +81,9 @@ def _calculateTrialPerformance(trial: singleTrialData) -> float:
 
 
 def _analyzeGroupData(group: singleGroupData) -> groupStats:
+    """
+        Collects information about the run parameters and performance of a group.
+    """
     trial_performances: List[float] = [_calculateTrialPerformance(trial) for trial in group.values()]
     return {
         "command_string": _getGroupRunString(group),
@@ -103,10 +94,8 @@ def _analyzeGroupData(group: singleGroupData) -> groupStats:
 
 
 class GromaxData(object):
-    def __init__(self, data: Optional[allData] = None):
+    def __init__(self):
         self._data: allData = {}
-        if data:
-            self._data = data
 
     def insertDataPoint(self, group: int, trial: int, component: int, key: str, data_point: dataPoint):
         if group not in self._data:
@@ -116,20 +105,6 @@ class GromaxData(object):
         if component not in self._data[group][trial]:
             self._data[group][trial][component]: singleTrialData = {}
         self._data[group][trial][component][key]: dataPoint = data_point
-
-    @property
-    def data(self) -> allData:
-        """
-            Returns a copy of the internal data format.
-        """
-        return deepcopy(self._data)
-
-    @data.setter
-    def data(self, data) -> None:
-        self._data = data
-
-    # def asDataFrame(self, detail_level: str = "per_group") -> pd.DataFrame:
-    #     pass
 
     def groupStatistics(self) -> Dict[int, groupStats]:
         results: Dict[int, groupStats] = {}
