@@ -4,3 +4,4 @@ __pycache__
 .idea
 .mypy_cache
 venv
+gromax.egg-info
