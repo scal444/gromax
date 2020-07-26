@@ -25,6 +25,7 @@ def _executeGenerateWorkflow(args: argparse.Namespace) -> None:
     hw_config: HardwareConfig = HardwareConfig(cpu_ids=cpu_ids, gpu_ids=gpu_ids)
     # generate options
     config_splits: List[List[HardwareConfig]] = generateConfigSplitOptions(hw_config)
+    logging.debug("Generated {} hardware config breakdowns".format(len(config_splits)))
     run_opts: List[List[Dict]] = []
     for config_split in config_splits:
         run_opts.extend(createRunOptionsForConfigGroup(config_split, args.gmx_version))
@@ -67,9 +68,9 @@ def _selectWorkflow(args: argparse.Namespace) -> Callable[[argparse.Namespace], 
 
 
 def gromax():
-    logging.basicConfig(level=logging.INFO)
+    # logging.basicConfig(level=logging.INFO)
     # debug logging
-    # logging.basicConfig(level=logging.DEBUG, format='%(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
+    logging.basicConfig(level=logging.DEBUG, format='%(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
 
     logging.info("Executing gromax.")
     parsed_args: argparse.Namespace = parseArgs(sys.argv[1:])

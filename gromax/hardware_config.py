@@ -110,7 +110,7 @@ def distributeGpuIdsToTasks(gpu_ids: GpuIDs, ntasks: int) -> List[GpuIDs]:
     return result
 
 
-def generateConfigSplitOptions(hw_config: HardwareConfig) -> List[List[HardwareConfig]]:
+def generateConfigSplitOptions(hw_config: HardwareConfig, max_sims_per_gpu: int = 4) -> List[List[HardwareConfig]]:
     """
         Hardware configs can be split for simultaneous simulations with the following constraints:
 
@@ -122,6 +122,9 @@ def generateConfigSplitOptions(hw_config: HardwareConfig) -> List[List[HardwareC
         Returns a list of lists of [ [configsplit1] [configsplit2] ... ]
         where configsplit1 is a list of one or more hardware configs. The hardware parts in the components of
         configsplit1 should add up to the entire config.
+
+        Will not create a breakdown such that more than max_sims_per_gpu simulations use the same GPU.
+	TODO: integration test for this
 
     """
     num_total_cpus: int = hw_config.num_cpus
@@ -137,7 +140,9 @@ def generateConfigSplitOptions(hw_config: HardwareConfig) -> List[List[HardwareC
     # Search division options, between 1 cpu per sim and half of the cpus per sim. Note that the all CPUs
     # per sim option is already accounted for above.
     cpu_per_sim_options: List[int] = [i for i in range(1, int(num_total_cpus / 2) + 1)
-                                      if num_total_cpus % i == 0 and int(num_total_cpus / i) % num_total_gpus == 0]
+                                      if num_total_cpus % i == 0
+                                      and int(num_total_cpus / i) % num_total_gpus == 0
+                                      and math.ceil((num_total_cpus / i) / num_total_gpus <= max_sims_per_gpu)]
     for cpus_per_sim in cpu_per_sim_options:
         sims_in_set: int = int(num_total_cpus / cpus_per_sim)
 

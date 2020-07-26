@@ -144,7 +144,7 @@ class GenerateConfigSplitOptionsTest(unittest.TestCase):
         self.config.gpu_ids = []
 
         result = generateConfigSplitOptions(self.config)
-        self.assertEqual(self.expected_base, result)
+        self.assertCountEqual(self.expected_base, result)
 
     def testOnlyPrimeDivision(self):
         self.config.cpu_ids = [0, 1, 2]
@@ -153,7 +153,7 @@ class GenerateConfigSplitOptionsTest(unittest.TestCase):
         options = [HardwareConfig(cpu_ids=[i], gpu_ids=[0]) for i in range(3)]
         self.expected_base.append(options)
         result = generateConfigSplitOptions(self.config)
-        self.assertEqual(self.expected_base, result)
+        self.assertCountEqual(self.expected_base, result)
 
     def testNoGoodDecompositionForMultipleGpus(self):
         # with 2 gpus and 3 cpus, the only decomposition is the original
@@ -161,7 +161,7 @@ class GenerateConfigSplitOptionsTest(unittest.TestCase):
         self.config.gpu_ids = [0, 1]
 
         result = generateConfigSplitOptions(self.config)
-        self.assertEqual(self.expected_base, result)
+        self.assertCountEqual(self.expected_base, result)
 
     def testMultipleDecompositionWithOneGpu(self):
         self.config.cpu_ids = [0, 1, 2, 3]
@@ -172,7 +172,7 @@ class GenerateConfigSplitOptionsTest(unittest.TestCase):
         self.expected_base.append(single_cpu_option)
         self.expected_base.append(double_cpu_option)
         result = generateConfigSplitOptions(self.config)
-        self.assertEqual(self.expected_base, result)
+        self.assertCountEqual(self.expected_base, result)
 
     def testMultipleDecompositionWithMultipleGpus(self):
         # with 6 cpus and 2 gpus, the 3x option should not exist
@@ -184,7 +184,7 @@ class GenerateConfigSplitOptionsTest(unittest.TestCase):
         self.expected_base.append(single_cpu_option)
         self.expected_base.append(three_cpu_option)
         result = generateConfigSplitOptions(self.config)
-        self.assertEqual(self.expected_base, result)
+        self.assertCountEqual(self.expected_base, result)
 
     def testMultipleDecompositionWithOddRankOption(self):
         # with 6 cpus and 3 gpus, the 3x option exists but not the 2x
@@ -195,7 +195,20 @@ class GenerateConfigSplitOptionsTest(unittest.TestCase):
         self.expected_base.append(single_cpu_option)
         self.expected_base.append(two_cpu_option)
         result = generateConfigSplitOptions(self.config)
-        self.assertEqual(self.expected_base, result)
+        self.assertCountEqual(self.expected_base, result)
+
+    def testLimitSimsPerGpuDefault(self):
+        # This case tests that there is no config with 1 CPU - there would be 6, which
+        # violates the max of 4.
+        self.config.cpu_ids = [0, 1, 2, 3, 4, 5]
+        self.config.gpu_ids = [0]
+        self.expected_base.append([HardwareConfig(cpu_ids=[0, 1, 2], gpu_ids=[0]),
+                                   HardwareConfig(cpu_ids=[3, 4, 5], gpu_ids=[0])])
+        self.expected_base.append([HardwareConfig(cpu_ids=[0, 1], gpu_ids=[0]),
+                                   HardwareConfig(cpu_ids=[2, 3], gpu_ids=[0]),
+                                   HardwareConfig(cpu_ids=[4, 5], gpu_ids=[0])])
+        result = generateConfigSplitOptions(self.config)
+        self.assertCountEqual(self.expected_base, result)
 
 
 class DistributeGpuIdsToTasksTest(unittest.TestCase):
