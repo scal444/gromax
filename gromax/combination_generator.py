@@ -1,3 +1,5 @@
+import math
+
 from gromax.hardware_config import HardwareConfig
 from copy import deepcopy
 from typing import List, Dict, Set, Any, Callable
@@ -16,7 +18,7 @@ ParameterSetGroup = List[ParameterSet]
 HardwareConfigBreakdown = List[HardwareConfig]
 
 
-def genNtmpiOptions(total_procs: int, num_gpus: int = 1) -> List[int]:
+def genNtmpiOptions(total_procs: int, num_gpus: int, max_sims_per_gpu: int = 4) -> List[int]:
     """
         Breaks down the possible combinations of ntmpi for the given number of GPUs. For example, with
         2 GPUs and 6 CPUs, the combinations are:
@@ -25,6 +27,8 @@ def genNtmpiOptions(total_procs: int, num_gpus: int = 1) -> List[int]:
 
             Note that in this example ntmpi=3 does not work, because you can't eveny split 2 GPUs among
             3 ranks.
+
+        Will not assign more than max_sims_per_gpu simulations to a single GPU
 
         If passed with no GPUs, returns a size one list with the number of processors, as non-GPU simulations
         should maximize thread counts.
@@ -35,7 +39,7 @@ def genNtmpiOptions(total_procs: int, num_gpus: int = 1) -> List[int]:
         return [total_procs]
     curroption: int = num_gpus
     options: List[int] = []
-    while curroption <= total_procs:
+    while curroption <= total_procs and math.ceil(curroption / num_gpus) <= max_sims_per_gpu:
         if total_procs % curroption == 0 and curroption % num_gpus == 0:
             options.append(curroption)
         curroption += 1
@@ -150,7 +154,6 @@ def _createVersionedOptions(base_opts: ParameterSet, hw_config: HardwareConfig, 
             # TODO verify that this is correct on all versions
             return params["pme"] == "gpu" and params["ntmpi"] > 1
         options = applyOptionIf(options, "npme", 1, nPmePredicate)
-    # TODO double-check pme and bonded compatibility. Can you have bonded and not pme?
     if gmx_version >= "2019":
         options = applyOptionToAll(options, "bonded", ["cpu", "gpu"])
     # TODO add 'update' for 2020.

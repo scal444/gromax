@@ -9,19 +9,19 @@ from gromax.hardware_config import HardwareConfig
 class GenNtmpiOptionsTest(unittest.TestCase):
     def testCatchesFailure(self):
         with self.assertRaises(ValueError):
-            genNtmpiOptions(0)
+            genNtmpiOptions(0, 0)
 
     def testSingleCase(self):
-        self.assertEqual(genNtmpiOptions(1), [1])
+        self.assertEqual(genNtmpiOptions(1, 1), [1])
 
     def testPrimeCase(self):
-        self.assertEqual(genNtmpiOptions(5), [1, 5])
+        self.assertEqual(genNtmpiOptions(3, 1), [1, 3])
 
     def testEvenCase(self):
-        self.assertEqual(genNtmpiOptions(6), [1, 2, 3, 6])
+        self.assertEqual(genNtmpiOptions(6, 1), [1, 2, 3])
 
     def testOddCase(self):
-        self.assertEqual(genNtmpiOptions(9), [1, 3, 9])
+        self.assertEqual(genNtmpiOptions(9, 1), [1, 3])
 
     def testWithNGpu(self):
         self.assertEqual(genNtmpiOptions(6, 2), [2, 6])
