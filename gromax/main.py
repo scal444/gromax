@@ -16,16 +16,17 @@ from typing import Callable, List, Dict
 
 
 def _executeGenerateWorkflow(args: argparse.Namespace) -> None:
-    logging.info("Generating run options.")
+    logger: logging.Logger = logging.getLogger()
+    logger.info("Generating run options.")
     # Assign hardware config
     cpu_ids: List[int] = parseIDString(args.cpu_ids)
-    logging.info("CPU IDs: {}".format(cpu_ids))
+    logger.info("CPU IDs: {}".format(cpu_ids))
     gpu_ids: List[int] = parseIDString(args.gpu_ids)
-    logging.info("GPU IDs: {}".format(gpu_ids))
+    logger.info("GPU IDs: {}".format(gpu_ids))
     hw_config: HardwareConfig = HardwareConfig(cpu_ids=cpu_ids, gpu_ids=gpu_ids)
     # generate options
     config_splits: List[List[HardwareConfig]] = generateConfigSplitOptions(hw_config)
-    logging.debug("Generated {} hardware config breakdowns".format(len(config_splits)))
+    logger.debug("Generated {} hardware config breakdowns".format(len(config_splits)))
     run_opts: List[List[Dict]] = []
     for config_split in config_splits:
         run_opts.extend(createRunOptionsForConfigGroup(config_split, args.gmx_version))
@@ -39,14 +40,15 @@ def _executeGenerateWorkflow(args: argparse.Namespace) -> None:
 
 
 def _executeAnalyzeWorkflow(args: argparse.Namespace) -> None:
+    logger: logging.Logger = logging.getLogger()
     folder: str = args.directory
     if folder is None:
-        logging.info("No directory specified using --directory, using current directory.")
+        logger.info("No directory specified using --directory, using current directory.")
         folder = os.getcwd()
     if not os.path.isdir(folder):
-        logging.error("Analysis path {} is not a directory".format(folder))
+        logger.error("Analysis path {} is not a directory".format(folder))
         sys.exit(1)
-    logging.info("Analyzing gromax run results in directory {}.".format(folder))
+    logger.info("Analyzing gromax run results in directory {}.".format(folder))
     directory_content: allDirectoryContent = parseDirectoryStructure(folder)
     result_data: GromaxData = constructGromaxData(directory_content)
     sys.stdout.write(reportStatistics(result_data.groupStatistics()))
@@ -67,13 +69,28 @@ def _selectWorkflow(args: argparse.Namespace) -> Callable[[argparse.Namespace], 
     raise ValueError("Workflow '{}' does not exist".format(mode))
 
 
-def gromax():
-    # logging.basicConfig(level=logging.INFO)
-    # debug logging
-    logging.basicConfig(level=logging.DEBUG, format='%(levelname)-8s [%(filename)s:%(lineno)d] %(message)s')
+def _setLoggingLevel(logger: logging.Logger, log_level: str):
+    fmt: str = '%(message)s'
+    if log_level == "info":
+        logger.setLevel(logging.INFO)
+    elif log_level == "debug":
+        logger.setLevel(logging.DEBUG)
+        fmt = '%(levelname)-8s [%(filename)s:%(lineno)d] %(message)s'
+    # We don't use fatal, so this should not log anything.
+    elif log_level == "silent":
+        logger.setLevel(logging.FATAL)
+    else:
+        raise ValueError("Log level {} does not exist.".format(log_level))
+    formatter = logging.Formatter(fmt)
+    ch = logging.StreamHandler()
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
 
-    logging.info("Executing gromax.")
+def gromax():
     parsed_args: argparse.Namespace = parseArgs(sys.argv[1:])
+    logger: logging.Logger = logging.getLogger()
+    _setLoggingLevel(logger, parsed_args.log_level)
+    logger.info("Executing gromax.")
     workflow: Callable[[argparse.Namespace], None] = _selectWorkflow(parsed_args)
     workflow(parsed_args)
     sys.exit(0)

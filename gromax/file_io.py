@@ -51,7 +51,7 @@ def _getGroupFoldersWithIndices(directory: str) -> Dict[int, str]:
     folder_path: str
     for folder_path in os.listdir(directory):
         if "group_" not in folder_path:
-            logging.debug("Skipping folder {} - not a group folder".format(os.path.join(directory, folder_path)))
+            logging.getLogger().debug("Skipping folder {} - not a group folder".format(os.path.join(directory, folder_path)))
             continue
         try:
             result[_getGroupIndex(folder_path)] = os.path.join(directory, folder_path)
@@ -66,7 +66,7 @@ def _getTrialFoldersWithIndices(directory: str) -> Dict[int, str]:
     folder_path: str
     for folder_path in os.listdir(directory):
         if "trial_" not in folder_path:
-            logging.debug("Skipping folder {} - not a trial folder".format(os.path.join(directory, folder_path)))
+            logging.getLogger().debug("Skipping folder {} - not a trial folder".format(os.path.join(directory, folder_path)))
             continue
         try:
             result[_getTrialIndex(folder_path)] = os.path.join(directory, folder_path)
@@ -80,7 +80,7 @@ def _getComponentFoldersWithIndices(directory: str) -> Dict[int, str]:
     file_path: str
     for file_path in os.listdir(directory):
         if not file_path.endswith(".log"):
-            logging.debug("Skipping file {} - not a log file".format(os.path.join(directory, file_path)))
+            logging.getLogger().debug("Skipping file {} - not a log file".format(os.path.join(directory, file_path)))
             continue
         # Treat each subdirectory as a group directory, but some might not be so it's ok to fail.
         try:

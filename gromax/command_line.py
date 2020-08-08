@@ -59,7 +59,7 @@ def _buildParser() -> argparse.ArgumentParser:
     # TODO add examples/documentation
     parser.add_argument("--cpu_ids", type=str, help="CPUs to be run on.")
     parser.add_argument("--gpu_ids", type=str, help="GPUs to be run on.")
-
+    parser.add_argument("--log_level", type=str, default="info", help="Set logging verbosity - 'silent', 'info'(default), or 'debug'")
     return parser
 
 
@@ -85,7 +85,6 @@ def _checkArgs(args: argparse.Namespace) -> None:
 
 
 def parseArgs(args: List[str]) -> argparse.Namespace:
-    logging.info("Parsing args")
     parser: argparse.ArgumentParser = _buildParser()
     parsed_args: argparse.Namespace = parser.parse_args(args)
     _checkArgs(parsed_args)

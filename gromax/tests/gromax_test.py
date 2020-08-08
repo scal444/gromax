@@ -1,4 +1,5 @@
 import argparse
+import logging
 import unittest
 import gromax.main as gmx
 
@@ -26,3 +27,17 @@ class SelectWorkflowTest(unittest.TestCase):
         self.args.mode = "some_mode"
         with self.assertRaises(ValueError):
             gmx._selectWorkflow(self.args)
+
+
+class SetLogLevelTest(unittest.TestCase):
+    def setUp(self):
+        self.logger = logging.getLogger()
+
+    def testPassModes(self):
+        gmx._setLoggingLevel(self.logger, "debug")
+        gmx._setLoggingLevel(self.logger, "info")
+        gmx._setLoggingLevel(self.logger, "silent")
+
+    def testFailCase(self):
+        with self.assertRaises(ValueError):
+            gmx._setLoggingLevel(self.logger, "funky")

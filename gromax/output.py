@@ -151,11 +151,12 @@ def WriteRunScript(file: str, content: str):
     """
         Writes out the script to execute gromacs.
     """
+    logger: logging.Logger = logging.getLogger()
     path: str = os.path.abspath(file)
     try:
         with open(path, 'wt') as fout:
-            logging.info("Writing run run script to {}".format(path))
+            logger.info("Writing run run script to {}".format(path))
             fout.write(content)
     except IOError as e:
-        logging.error("Unable to open file for writing: {}".format(e))
+        logger.error("Unable to open file for writing: {}".format(e))
         raise SystemExit(1)
