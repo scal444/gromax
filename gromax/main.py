@@ -86,6 +86,7 @@ def _setLoggingLevel(logger: logging.Logger, log_level: str):
     ch.setFormatter(formatter)
     logger.addHandler(ch)
 
+
 def gromax():
     parsed_args: argparse.Namespace = parseArgs(sys.argv[1:])
     logger: logging.Logger = logging.getLogger()

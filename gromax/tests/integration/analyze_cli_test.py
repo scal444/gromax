@@ -54,7 +54,7 @@ Best single simulation
 ----------------------
   Aggregate performance: 59.94 ns/day
   Command line:
-    gmx mdrun -deffnm replicate_1 -gputasks 00 -nb gpu -nstlist 80 -nt 8 -ntmpi 1 -ntomp 8 -pin on -pinoffset 0 -pinstride 1 -pme gpu -s $tpr"""
+    gmx mdrun -deffnm replicate_1 -gputasks 00 -nb gpu -nstlist 80 -nt 8 -ntmpi 1 -ntomp 8 -pin on -pinoffset 0 -pinstride 1 -pme gpu -s $tpr\n"""
 
 
 class AnalyzeTestSuccess(unittest.TestCase):

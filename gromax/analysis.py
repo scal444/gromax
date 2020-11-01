@@ -187,4 +187,4 @@ def reportStatistics(stats: Dict[int, Dict[str, Any]]) -> str:
         _reportGrouping(total_best),
         _formatHeader("Best single simulation"),
         _reportGrouping(best_single_sim)
-    ])
+    ]) + "\n"
