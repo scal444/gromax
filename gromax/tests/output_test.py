@@ -145,12 +145,12 @@ class AddDirectoryHandlingTest(unittest.TestCase):
 
 class WrapInLoopTest(unittest.TestCase):
     def testWrapEmptyLoop(self):
-        self.assertEqual(_wrapInLoop("", "i", 5), "for i in {1..5}; do\n\ndone")
+        self.assertEqual(_wrapInLoop("", "i", 5), "for i in $(seq 1 ${ntrials}); do\n\ndone")
 
     def testWrapsLines(self):
         lines: str = "line 1\n  line 2 incremented"
-        expected: str = "for var in {1..$trials}; do\n   line 1\n     line 2 incremented\ndone"
-        self.assertEqual(expected, _wrapInLoop(lines, "var", "$trials", tab_increment=3))
+        expected: str = "for var in $(seq 1 ${ntrials}); do\n   line 1\n     line 2 incremented\ndone"
+        self.assertEqual(expected, _wrapInLoop(lines, "var", tab_increment=3))
 
 
 class ProcessSingleGroupTest(unittest.TestCase):
@@ -159,10 +159,10 @@ class ProcessSingleGroupTest(unittest.TestCase):
 
     def testProcessSingleGroup(self):
         self.maxDiff = None
-        result = _ProcessSingleGroup(self.params, "gmx mdrun", "i", 3, resetstep="${resetstep}", nsteps="${nsteps}",
+        result = _ProcessSingleGroup(self.params, "gmx mdrun", "i", resetstep="${resetstep}", nsteps="${nsteps}",
                                      tab_increment=2)
         expected: str = (
-            "for i in {1..3}; do\n"
+            "for i in $(seq 1 ${ntrials}); do\n"
             "  trialdir=${groupdir}/trial_${i}\n"
             "  mkdir $trialdir\n"
             "  cd $trialdir\n"
@@ -182,18 +182,18 @@ class ProcessAllGroupsTest(unittest.TestCase):
     def testProcessAllGroups(self, mock_process):
         groups = [[], [], []]
         mock_process.return_value = "placeholder loop text"
-        result = _ProcessAllGroups(groups, "i", "gmx mdrun", 5)
+        result = _ProcessAllGroups(groups, "i", "gmx mdrun")
         expected = (
             "group=1\n"
-            "groupdir=$workdir/group_1\n"
+            "groupdir=$workdir/group_${group}\n"
             "mkdir $groupdir\ncd $groupdir\n"
             "placeholder loop text\n\n\n"
             "group=2\n"
-            "groupdir=$workdir/group_2\n"
+            "groupdir=$workdir/group_${group}\n"
             "mkdir $groupdir\ncd $groupdir\n"            
             "placeholder loop text\n\n\n"
             "group=3\n"
-            "groupdir=$workdir/group_3\n"
+            "groupdir=$workdir/group_${group}\n"
             "mkdir $groupdir\ncd $groupdir\n"            
             "placeholder loop text\n\n\n"
         )
@@ -205,8 +205,8 @@ class ParamsToStringTest(unittest.TestCase):
     def testParamsToString(self, mock_process):
         mock_process.return_value = "mock body"
         result = ParamsToString([[], []], "mytpr.tpr", "gmx mdrun", 3, "i", 15000, 10000)
-        expected = "#!/bin/bash\n\ngmx='gmx mdrun'\ntpr=mytpr.tpr\nnsteps=15000\nresetstep=10000\nworkdir=`pwd`\n\n" + \
-                   "#" * 80 + "\n\nmock body\n\nexit\n"
+        expected = "#!/bin/bash\n\ngmx='gmx mdrun'\ntpr=mytpr.tpr\nnsteps=15000\nresetstep=10000\nntrials=3\nworkdir" \
+                   "=`pwd`\n\n" + "#" * 80 + "\n\nmock body\n\nexit\n"
         self.assertEqual(result, expected)
 
 
