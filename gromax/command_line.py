@@ -3,8 +3,9 @@ import logging
 from typing import List, Iterable
 
 # File constants.
-_DESCRIPTION = "Some program description"
-_EPILOG = "Some program epilogue"
+_DESCRIPTION = "Gromax is a tool to build benchmarking scripts for Gromax and analyze the results. \n" \
+               "Generate scripts with the 'gromax generate' command, and analyze results with 'gromax analyze'."
+_EPILOG = "For more details on parameters and usage, visit https://github.com/scal444/gromax/docs\n"
 
 
 def parseIDString(ids: str) -> List[int]:
@@ -47,19 +48,27 @@ def _buildParser() -> argparse.ArgumentParser:
     """
     parser: argparse.ArgumentParser = argparse.ArgumentParser(description=_DESCRIPTION, epilog=_EPILOG)
     parser.add_argument('mode', type=str, help='The gromax operation to run. "generate", "execute", or "analyze"')
-    parser.add_argument('--gmx_version', type=str, help='Gromacs version - "2016", "2018", or "2019"')
-    parser.add_argument("--run_file", type=str, help="path to bash benchmark script to create.")
-    parser.add_argument("--directory", type=str, help="path to execution/analysis directory.")
-    parser.add_argument("--version", action="version", version="alpha")
-    parser.add_argument("--gmx_executable", type=str, default="gmx", help=(
+
+    generate_group = parser.add_argument_group("generate", "arguments for 'gromax generate'")
+    generate_group.add_argument('--gmx_version', type=str, metavar="",
+                                help='Gromacs version - "2016", "2018", or "2019"', )
+    generate_group.add_argument("--run_file", type=str, help="Path to bash benchmark script to create.", metavar="")
+
+    generate_group.add_argument("--gmx_executable", type=str, default="gmx", metavar="", help=(
         "gmx or gmx_mpi executable path. Defaults to 'gmx', which works if the executable is in your path."
     ))
-    parser.add_argument("--trials_per_group", type=int, default=3, help="Number of times to run each parameter set.")
-    parser.add_argument("--tpr", type=str, help="path to tpr file to benchmark.")
+    generate_group.add_argument("--trials_per_group", type=int, default=3, metavar="",
+                                help="Number of times to run each parameter set.")
+    generate_group.add_argument("--tpr", type=str, help="Path to the tpr file to benchmark.", metavar="")
     # TODO add examples/documentation
-    parser.add_argument("--cpu_ids", type=str, help="CPUs to be run on.")
-    parser.add_argument("--gpu_ids", type=str, help="GPUs to be run on.")
-    parser.add_argument("--log_level", type=str, default="info", help="Set logging verbosity - 'silent', 'info'(default), or 'debug'")
+    generate_group.add_argument("--cpu_ids", type=str, help="CPUs to be run on.", metavar="")
+    generate_group.add_argument("--gpu_ids", type=str, help="GPUs to be run on.", metavar="")
+
+    analyze_group = parser.add_argument_group("analyze", "arguments for 'gromax analyze'")
+    analyze_group.add_argument("--directory", type=str, help="Path to execution/analysis directory.", metavar="")
+    parser.add_argument("--version", action="version", version="alpha")
+    parser.add_argument("--log_level", type=str, default="info", metavar="",
+                        help="Set logging verbosity - 'silent', 'info'(default), or 'debug'")
     return parser
 
 
