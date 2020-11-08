@@ -11,8 +11,13 @@ Today's molecular simulation engines are complicated. To get the most performanc
 there are a large number of simulation parameters that need to be considered and tweaked. With the incorporation of
 GPUs this problem becomes even more complicated. Gromax is here to help.
 
+## Installation
+### Via pip
+To install the current master version:
+    pip install git+https://github.com/scal444/gromax
+TODO: Add branches as they come online
 
-## Requirements
+### Requirements
 - python 3.6 or greater
 
 ## Current Capabilities
