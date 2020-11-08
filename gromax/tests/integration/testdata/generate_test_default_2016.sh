@@ -4,6 +4,7 @@ gmx='gmx mdrun'
 tpr=None
 nsteps=15000
 resetstep=10000
+ntrials=3
 workdir=`pwd`
 
 ################################################################################
@@ -12,7 +13,7 @@ group=1
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
-for i in {1..3}; do
+for i in $(seq 1 ${ntrials}); do
   trialdir=${groupdir}/trial_${i}
   mkdir $trialdir
   cd $trialdir
@@ -26,7 +27,7 @@ group=2
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
-for i in {1..3}; do
+for i in $(seq 1 ${ntrials}); do
   trialdir=${groupdir}/trial_${i}
   mkdir $trialdir
   cd $trialdir
@@ -40,7 +41,7 @@ group=3
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
-for i in {1..3}; do
+for i in $(seq 1 ${ntrials}); do
   trialdir=${groupdir}/trial_${i}
   mkdir $trialdir
   cd $trialdir
@@ -57,7 +58,7 @@ group=4
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
-for i in {1..3}; do
+for i in $(seq 1 ${ntrials}); do
   trialdir=${groupdir}/trial_${i}
   mkdir $trialdir
   cd $trialdir
@@ -72,7 +73,7 @@ group=5
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
-for i in {1..3}; do
+for i in $(seq 1 ${ntrials}); do
   trialdir=${groupdir}/trial_${i}
   mkdir $trialdir
   cd $trialdir
