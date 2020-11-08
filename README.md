@@ -14,7 +14,11 @@ GPUs this problem becomes even more complicated. Gromax is here to help.
 ## Installation
 ### Via pip
 To install the current master version:
-    pip install git+https://github.com/scal444/gromax
+
+```
+pip install git+https://github.com/scal444/gromax
+```
+
 TODO: Add branches as they come online
 
 ### Requirements
