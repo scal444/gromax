@@ -22,7 +22,7 @@ def genNtmpiOptions(total_procs: int, num_gpus: int, max_sims_per_gpu: int = 4) 
     """
         Breaks down the possible combinations of ntmpi for the given number of GPUs. For example, with
         2 GPUs and 6 CPUs, the combinations are:
-            ntmpi = 2, ntmomp = 3, with the 1st GPU assigned to the first rank, and 2nd to the 2nd rank
+            ntmpi = 2, ntomp = 3, with the 1st GPU assigned to the first rank, and 2nd to the 2nd rank
             ntmpi = 6, ntomp = 1, with the first GPU split among the first 3 ranks and so on.
 
             Note that in this example ntmpi=3 does not work, because you can't eveny split 2 GPUs among

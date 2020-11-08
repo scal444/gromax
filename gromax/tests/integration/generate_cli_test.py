@@ -111,3 +111,7 @@ class GenerateSuccessTests(unittest.TestCase):
     def testCustomTpr(self):
         self.kvs["--tpr"] = "custom_tpr.tpr"
         self._runAndCompareOutput("generate_test_custom_tpr.sh")
+
+    def testWeirdCount(self):
+        self.kvs["--cpu_ids"] = "0-6"
+        self._runAndCompareOutput("generate_test_odd_cpu_count.sh")

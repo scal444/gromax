@@ -9,8 +9,8 @@ if [ -z topdir ]; then
 fi
 
 PYTHON=python3
-
-RUNBASE="$topdir/gromax/main.py generate --cpu_ids=0-3 --gpu_ids=0,1"
+exe=$topdir/gromax/main.py
+RUNBASE="$exe generate --cpu_ids=0-3 --gpu_ids=0,1"
 OUTDIR="$topdir/gromax/tests/integration/testdata"
 
 # Basic 2016 test
@@ -37,5 +37,9 @@ $PYTHON $RUNBASE --run_file=$OUTDIR/generate_test_default_2016.sh --gmx_version=
 # custom tpr
 $PYTHON $RUNBASE --run_file=$OUTDIR/generate_test_custom_tpr.sh --gmx_version=2016 \
   --tpr=custom_tpr.tpr
+
+
+# Test with strange CPU/GPU count that still works
+$PYTHON $exe generate --cpu_ids=0-6 --gpu_ids=0,1 --run_file=$OUTDIR/generate_test_odd_cpu_count.sh --gmx_version=2016 
 
 exit 0

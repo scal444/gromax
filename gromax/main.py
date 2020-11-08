@@ -21,8 +21,17 @@ def _executeGenerateWorkflow(args: argparse.Namespace) -> None:
     # Assign hardware config
     cpu_ids: List[int] = parseIDString(args.cpu_ids)
     logger.info("CPU IDs: {}".format(cpu_ids))
+    num_cpus: int = len(cpu_ids)
+    if num_cpus % 2 == 1:
+        logger.warning("Detected an odd number of CPU IDs ({}), this is atypical.".format(num_cpus))
     gpu_ids: List[int] = parseIDString(args.gpu_ids)
     logger.info("GPU IDs: {}".format(gpu_ids))
+    num_gpus: int = len(gpu_ids)
+    modval: int = num_cpus % num_gpus
+    if modval != 0:
+        logger.warning("Number of CPUs({}) is not divisible by the number of GPUs({}), will only use {} CPUs.".format(
+            num_cpus, num_gpus, num_cpus - modval))
+        cpu_ids = cpu_ids[:-modval]
     hw_config: HardwareConfig = HardwareConfig(cpu_ids=cpu_ids, gpu_ids=gpu_ids)
     # generate options
     config_splits: List[List[HardwareConfig]] = generateConfigSplitOptions(hw_config)
