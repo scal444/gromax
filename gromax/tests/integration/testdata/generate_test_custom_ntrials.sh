@@ -9,7 +9,7 @@ workdir=`pwd`
 ################################################################################
 
 group=1
-groupdir=$workdir/group_1
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..18}; do
@@ -23,7 +23,7 @@ done
 
 
 group=2
-groupdir=$workdir/group_2
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..18}; do
@@ -37,7 +37,7 @@ done
 
 
 group=3
-groupdir=$workdir/group_3
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..18}; do
@@ -54,7 +54,7 @@ done
 
 
 group=4
-groupdir=$workdir/group_4
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..18}; do
@@ -69,7 +69,7 @@ done
 
 
 group=5
-groupdir=$workdir/group_5
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..18}; do

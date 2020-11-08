@@ -9,7 +9,7 @@ workdir=`pwd`
 ################################################################################
 
 group=1
-groupdir=$workdir/group_1
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..3}; do
@@ -23,7 +23,7 @@ done
 
 
 group=2
-groupdir=$workdir/group_2
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..3}; do
@@ -37,7 +37,7 @@ done
 
 
 group=3
-groupdir=$workdir/group_3
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..3}; do
@@ -51,7 +51,7 @@ done
 
 
 group=4
-groupdir=$workdir/group_4
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..3}; do
@@ -65,7 +65,7 @@ done
 
 
 group=5
-groupdir=$workdir/group_5
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..3}; do
@@ -79,7 +79,7 @@ done
 
 
 group=6
-groupdir=$workdir/group_6
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..3}; do
@@ -93,7 +93,7 @@ done
 
 
 group=7
-groupdir=$workdir/group_7
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..3}; do
@@ -107,7 +107,7 @@ done
 
 
 group=8
-groupdir=$workdir/group_8
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..3}; do
@@ -121,7 +121,7 @@ done
 
 
 group=9
-groupdir=$workdir/group_9
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..3}; do
@@ -138,7 +138,7 @@ done
 
 
 group=10
-groupdir=$workdir/group_10
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..3}; do
@@ -155,7 +155,7 @@ done
 
 
 group=11
-groupdir=$workdir/group_11
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..3}; do
@@ -172,7 +172,7 @@ done
 
 
 group=12
-groupdir=$workdir/group_12
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..3}; do
@@ -189,7 +189,7 @@ done
 
 
 group=13
-groupdir=$workdir/group_13
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..3}; do
@@ -204,7 +204,7 @@ done
 
 
 group=14
-groupdir=$workdir/group_14
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..3}; do
@@ -219,7 +219,7 @@ done
 
 
 group=15
-groupdir=$workdir/group_15
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..3}; do
@@ -234,7 +234,7 @@ done
 
 
 group=16
-groupdir=$workdir/group_16
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..3}; do
@@ -249,7 +249,7 @@ done
 
 
 group=17
-groupdir=$workdir/group_17
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..3}; do
@@ -264,7 +264,7 @@ done
 
 
 group=18
-groupdir=$workdir/group_18
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..3}; do
@@ -279,7 +279,7 @@ done
 
 
 group=19
-groupdir=$workdir/group_19
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..3}; do
@@ -294,7 +294,7 @@ done
 
 
 group=20
-groupdir=$workdir/group_20
+groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
 for i in {1..3}; do

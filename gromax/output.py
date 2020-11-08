@@ -125,7 +125,7 @@ def _ProcessAllGroups(groups: List[ParameterSetGroup], loop_variable: str, gmx: 
     for i, group in enumerate(groups):
         group_num: int = i + 1
         result += "group={}\n".format(group_num)
-        result += "groupdir=$workdir/group_{}\n".format(group_num)
+        result += "groupdir=$workdir/group_${group}\n"
         result += "mkdir $groupdir\n"
         result += "cd $groupdir\n"
         result += _ProcessSingleGroup(group, gmx, loop_variable, count, nsteps=nsteps, resetstep=resetstep,
