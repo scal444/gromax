@@ -33,7 +33,6 @@ TODO: Add branches as they come online
 - See the examples section in the documentation
 
 ## Future additions
-- A log parser to help get benchmarking data into a format suitable for analysis
 - A run executor to automate the benchmarking process.
 
 ## Long-term directions
