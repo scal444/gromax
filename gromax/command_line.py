@@ -52,8 +52,8 @@ def _buildParser() -> argparse.ArgumentParser:
     generate_group = parser.add_argument_group("generate", "arguments for 'gromax generate'")
     generate_group.add_argument('--gmx_version', type=str, metavar="",
                                 help='Gromacs version - "2016", "2018", or "2019"', )
-    generate_group.add_argument("--run_file", type=str, help="Path to bash benchmark script to create.", metavar="")
-
+    generate_group.add_argument("--run_file", type=str, help="Path to bash benchmark script to create.",
+                                default="benchmark.sh", metavar="")
     generate_group.add_argument("--gmx_executable", type=str, default="gmx", metavar="", help=(
         "gmx or gmx_mpi executable path. Defaults to 'gmx', which works if the executable is in your path."
     ))

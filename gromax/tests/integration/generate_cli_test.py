@@ -28,10 +28,6 @@ class GenerateFailBadArgsTests(unittest.TestCase):
         self.cmds.extend(["--cpu_ids", "0-4", "--gpu_ids", "0-1", "--run_file", "test.sh", "--gmx_version", "2015"])
         self.assertGreater(self._run_and_get_rc(), 0)
 
-    def testNoRunFile(self):
-        self.cmds.extend(["--cpu_ids", "0-4", "--gpu_ids", "0-1", "--gmx_version", "2016"])
-        self.assertGreater(self._run_and_get_rc(), 0)
-
     def testNoCpuIds(self):
         self.cmds.extend(["--gmx_version", "2019", "--gpu_ids", "0-1", "--run_file", "test.sh"])
         self.assertGreater(self._run_and_get_rc(), 0)
