@@ -18,13 +18,15 @@ class AnalyzeTestFailures(unittest.TestCase):
             return sysexit.exception.code
 
     def setUp(self):
-        self.args = ["gromax", "generate"]
+        self.args = ["gromax", "analyze"]
 
     def testNoSuchDirectory(self):
         pass
 
     def testNoGroupsInDirectory(self):
-        pass
+        empty_dir: str = os.path.join(os.path.dirname(__file__), "testdata/empty_run_dir")
+        self.args.extend(["--directory", empty_dir])
+        self.assertGreater(self._run_and_get_rc(), 0)
 
     def testParseErrorNoPerformance(self):
         pass

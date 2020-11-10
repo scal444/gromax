@@ -59,6 +59,10 @@ def _executeAnalyzeWorkflow(args: argparse.Namespace) -> None:
         sys.exit(1)
     logger.info("Analyzing gromax run results in directory {}.".format(folder))
     directory_content: allDirectoryContent = parseDirectoryStructure(folder)
+    if len(directory_content) == 0:
+        # TODO link what directory output should look like when documented.
+        logger.error("Analysis path {} contains no results in gromax format, exiting.".format(folder))
+        sys.exit(1)
     result_data: GromaxData = constructGromaxData(directory_content)
     sys.stdout.write(reportStatistics(result_data.groupStatistics()))
 
