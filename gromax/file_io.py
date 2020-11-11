@@ -51,12 +51,13 @@ def _getGroupFoldersWithIndices(directory: str) -> Dict[int, str]:
     folder_path: str
     for folder_path in os.listdir(directory):
         if "group_" not in folder_path:
-            logging.getLogger().debug("Skipping folder {} - not a group folder".format(os.path.join(directory, folder_path)))
+            logging.getLogger("gromax").debug("Skipping folder {} - not a group folder".format(
+                os.path.join(directory, folder_path)))
             continue
         try:
             result[_getGroupIndex(folder_path)] = os.path.join(directory, folder_path)
         except (TypeError, ValueError) as e:
-            logging.warning("Failed to parse {}: {}".format(directory + '/' + folder_path, e))
+            logging.getLogger("gromax").warning("Failed to parse {}: {}".format(directory + '/' + folder_path, e))
 
     return result
 
@@ -66,12 +67,13 @@ def _getTrialFoldersWithIndices(directory: str) -> Dict[int, str]:
     folder_path: str
     for folder_path in os.listdir(directory):
         if "trial_" not in folder_path:
-            logging.getLogger().debug("Skipping folder {} - not a trial folder".format(os.path.join(directory, folder_path)))
+            logging.getLogger("gromax").debug("Skipping folder {} - not a trial folder".format(
+                os.path.join(directory, folder_path)))
             continue
         try:
             result[_getTrialIndex(folder_path)] = os.path.join(directory, folder_path)
         except (TypeError, ValueError) as e:
-            logging.warning("Failed to parse {}: {}".format(directory + '/' + folder_path, e))
+            logging.getLogger("gromax").warning("Failed to parse {}: {}".format(directory + '/' + folder_path, e))
     return result
 
 
@@ -80,13 +82,14 @@ def _getComponentFoldersWithIndices(directory: str) -> Dict[int, str]:
     file_path: str
     for file_path in os.listdir(directory):
         if not file_path.endswith(".log"):
-            logging.getLogger().debug("Skipping file {} - not a log file".format(os.path.join(directory, file_path)))
+            logging.getLogger("gromax").debug("Skipping file {} - not a log file".format(
+                os.path.join(directory, file_path)))
             continue
         # Treat each subdirectory as a group directory, but some might not be so it's ok to fail.
         try:
             result[_getComponentIndex(file_path)] = os.path.join(directory, file_path)
         except (TypeError, ValueError) as e:
-            logging.warning("Failed to parse {}: {}".format(directory + '/' + file_path, e))
+            logging.getLogger("gromax").warning("Failed to parse {}: {}".format(directory + '/' + file_path, e))
     return result
 
 

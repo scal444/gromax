@@ -78,7 +78,7 @@ def _buildParser() -> argparse.ArgumentParser:
 
 
 def _failWithError(err: str):
-    logging.getLogger().error(err)
+    logging.getLogger("gromax").error(err)
     raise SystemExit(1)
 
 
@@ -100,7 +100,7 @@ def _checkGenerateArgs(args: argparse.Namespace) -> None:
         args.gpu_ids = ",".join([str(identifier) for identifier in range(args.num_gpus)])
 
 
-def _checkArgs(args: argparse.Namespace) -> None:
+def checkArgs(args: argparse.Namespace) -> None:
     good_modes: Iterable[str] = ("generate", "execute", "analyze")
     if args.mode not in good_modes:
         _failWithError("'mode' is a required positional argument - options are 'generate', 'execute', 'analyze'")
@@ -112,5 +112,4 @@ def _checkArgs(args: argparse.Namespace) -> None:
 def parseArgs(args: List[str]) -> argparse.Namespace:
     parser: argparse.ArgumentParser = _buildParser()
     parsed_args: argparse.Namespace = parser.parse_args(args)
-    _checkArgs(parsed_args)
     return parsed_args

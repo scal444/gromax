@@ -152,7 +152,7 @@ def WriteRunScript(file: str, content: str):
     """
         Writes out the script to execute gromacs.
     """
-    logger: logging.Logger = logging.getLogger()
+    logger: logging.Logger = logging.getLogger("gromax")
     path: str = os.path.abspath(file)
     try:
         with open(path, 'wt') as fout:

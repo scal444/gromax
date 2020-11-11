@@ -123,7 +123,7 @@ def constructGromaxData(directory_structure: allDirectoryContent) -> GromaxData:
                     with open(component_file, 'r') as fin:
                         contents: str = fin.read()
                 except IOError as e:
-                    logging.warning("Unable to open log file {}: {}".format(component_file, e))
+                    logging.getLogger("gromax").warning("Unable to open log file {}: {}".format(component_file, e))
                     continue
                 extracted_elements: Dict[str, dataPoint] = parser.parse(contents)
                 for key, val in extracted_elements.items():

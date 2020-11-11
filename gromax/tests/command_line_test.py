@@ -1,18 +1,19 @@
 import unittest
-from gromax.command_line import parseArgs, parseIDString
+from gromax.command_line import checkArgs, parseArgs, parseIDString
 
 
 class CommandLineInputTest(unittest.TestCase):
     def testInvalidGromacsVersionCaught(self):
         args = ["generate", "--gmx_version", "2015"]
         with self.assertRaises(SystemExit):
-            parseArgs(args)
+            checkArgs(parseArgs(args))
 
     def testValidGromacsVersionsAccepted(self):
         # TODO import this when centralized and loop over valid ones
         valid_options = ["2016", "2018", "2019"]
         for opt in valid_options:
-            parseArgs(["generate", "--gmx_version", opt, "--cpu_ids", 0, "--gpu_ids", 0, "--run_file",  "test.sh"])
+            checkArgs(parseArgs(
+                ["generate", "--gmx_version", opt, "--cpu_ids", 0, "--gpu_ids", 0, "--run_file",  "test.sh"]))
 
     def testExitsWithVersion(self):
         with self.assertRaises(SystemExit) as sysexit:
@@ -21,7 +22,7 @@ class CommandLineInputTest(unittest.TestCase):
 
     def testInvalidModeCaught(self):
         with self.assertRaises(SystemExit) as sysexit:
-            parseArgs(["some_command"])
+            checkArgs(parseArgs(["some_command"]))
         self.assertGreater(sysexit.exception.code, 0)
 
 
@@ -32,25 +33,25 @@ class CommandLineHardwareOptionsTest(unittest.TestCase):
     def testNeitherCpuOptionSelected(self):
         self.args.extend(["--gpu_ids", "0"])
         with self.assertRaises(SystemExit) as sysexit:
-            parseArgs(self.args)
+            checkArgs(parseArgs(self.args))
         self.assertGreater(sysexit.exception.code, 0)
 
     def testNeitherGpuOptionSelected(self):
         self.args.extend(["--cpu_ids", "0"])
         with self.assertRaises(SystemExit) as sysexit:
-            parseArgs(self.args)
+            checkArgs(parseArgs(self.args))
         self.assertGreater(sysexit.exception.code, 0)
 
     def testBothCpuOptionsSelected(self):
         self.args.extend(["--cpu_ids", "0", "--num_cpus", "4"])
         with self.assertRaises(SystemExit) as sysexit:
-            parseArgs(self.args)
+            checkArgs(parseArgs(self.args))
         self.assertGreater(sysexit.exception.code, 0)
 
     def testBothGpuOptionsSelected(self):
         self.args.extend(["--cpu_ids", "0", "--gpu_ids", "0", "--num_gpus", "4"])
         with self.assertRaises(SystemExit) as sysexit:
-            parseArgs(self.args)
+            checkArgs(parseArgs(self.args))
         self.assertGreater(sysexit.exception.code, 0)
 
 

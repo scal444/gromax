@@ -6,7 +6,7 @@ import sys
 from gromax.analysis import GromaxData, constructGromaxData, reportStatistics
 from gromax.file_io import parseDirectoryStructure, allDirectoryContent
 from gromax.combination_generator import createRunOptionsForConfigGroup
-from gromax.command_line import parseArgs, parseIDString
+from gromax.command_line import checkArgs, parseArgs, parseIDString
 from gromax.hardware_config import HardwareConfig, generateConfigSplitOptions
 from gromax.output import ParamsToString, WriteRunScript
 from typing import Callable, List, Dict
@@ -16,7 +16,7 @@ from typing import Callable, List, Dict
 
 
 def _executeGenerateWorkflow(args: argparse.Namespace) -> None:
-    logger: logging.Logger = logging.getLogger()
+    logger: logging.Logger = logging.getLogger("gromax")
     logger.info("Generating run options.")
     # Assign hardware config
     cpu_ids: List[int] = parseIDString(args.cpu_ids)
@@ -49,7 +49,7 @@ def _executeGenerateWorkflow(args: argparse.Namespace) -> None:
 
 
 def _executeAnalyzeWorkflow(args: argparse.Namespace) -> None:
-    logger: logging.Logger = logging.getLogger()
+    logger: logging.Logger = logging.getLogger("gromax")
     folder: str = args.directory
     if folder is None:
         logger.info("No directory specified using --directory, using current directory.")
@@ -83,7 +83,7 @@ def _selectWorkflow(args: argparse.Namespace) -> Callable[[argparse.Namespace], 
 
 
 def _setLoggingLevel(logger: logging.Logger, log_level: str):
-    fmt: str = '%(message)s'
+    fmt: str = '%(levelname)-8s%(message)s'
     if log_level == "info":
         logger.setLevel(logging.INFO)
     elif log_level == "debug":
@@ -101,9 +101,10 @@ def _setLoggingLevel(logger: logging.Logger, log_level: str):
 
 
 def gromax():
+    logger: logging.Logger = logging.getLogger("gromax")
     parsed_args: argparse.Namespace = parseArgs(sys.argv[1:])
-    logger: logging.Logger = logging.getLogger()
     _setLoggingLevel(logger, parsed_args.log_level)
+    checkArgs(parsed_args)
     logger.info("Executing gromax.")
     workflow: Callable[[argparse.Namespace], None] = _selectWorkflow(parsed_args)
     workflow(parsed_args)
