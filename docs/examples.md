@@ -6,18 +6,28 @@ These examples generate bash scripts that can be used to benchmark Gromacs on yo
 # benchmark are easily configurable at the top of the output script.
 # TODO Update when runfile is no longer mandatory.
 # For Gromacs 2019: 
-gromax generate --cpu_ids=0,1,2,3 --gpus_ids=0,1 --gmx_version=2019 --run_file=benchmark_gmx2019.sh
+gromax generate --num_cpus=4 --num_gpus=2 --gmx_version=2019 --run_file=benchmark_gmx2019.sh
 # For Gromacs 2018:
-gromax generate --cpu_ids=0,1,2,3 --gpus_ids=0,1 --gmx_version=2019 --run_file=benchmark_gmx2018.sh
+gromax generate --num_cpus=4 --num_gpus=2  --gmx_version=2018 --run_file=benchmark_gmx2018.sh
 ```
 
 #### Different ways to specify hardware components.
+The simplest use is to specify the number of CPUs and GPUs to be tested (see above example). This works great if the 
+CPUs and GPUs you want to test on are indexed from 0 and don't skip. There are several alternative ways to customize
+hardware usage: 
 ```shell script
 # It's easy to specify ranges of CPUs or GPUs. This example is for a 40 CPU system with 5 GPUs, with logical
 # IDs starting from 0.
 gromax generate --gmx_version=2020 --cpu_ids=0-39 --gpu_ids=0-4
 # Colon-range syntax works as well.
 gromax generate --gmx_version=2020 --cpu_ids=0:39 --gpu_ids=0:4
+# Both of the above are equivalent to --num_cpus=40 --num_gpus=5.
+
+# Comma separated values work as well, as long as they are evenly strided.
+gromax generate --gmx_version=2018 --cpu_ids=0,1,2,3 --gpu_ids=0
+
+# Use only GPUs 1 and 2 (e.g. if GPU 0 is dedicated to graphics)
+gromax generate --gmx_version=2020, --num_cpus=8 --gpu_ids=1,2
 
 # CPUs can be strided, if e.g. one has a hyperthreaded system and wants 1 thread per physical core.
 # This will benchmark on cores 0,2,4,and 6.

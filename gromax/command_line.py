@@ -61,9 +61,14 @@ def _buildParser() -> argparse.ArgumentParser:
                                 help="Number of times to run each parameter set.")
     generate_group.add_argument("--tpr", type=str, help="Path to the tpr file to benchmark.", metavar="")
     # TODO add examples/documentation
-    generate_group.add_argument("--cpu_ids", type=str, help="CPUs to be run on.", metavar="")
-    generate_group.add_argument("--gpu_ids", type=str, help="GPUs to be run on.", metavar="")
-
+    generate_group.add_argument("--cpu_ids", type=str, help="CPUs to be run on.", metavar="", default="")
+    generate_group.add_argument("--gpu_ids", type=str, help="GPUs to be run on.", metavar="", default="")
+    generate_group.add_argument("--num_cpus", type=int, metavar="",
+                                help="Number of CPUs to run on, indexed from 0. Use this option OR --cpu_ids (if not "
+                                     "using all CPUs on the node), but not both.", default=0)
+    generate_group.add_argument("--num_gpus", type=int, metavar="",
+                                help="Number of GPUs to run on, indexed from 0. Use this option OR --gpu_ids (if not "
+                                     "using all GPUs on the node), but not both.", default=0)
     analyze_group = parser.add_argument_group("analyze", "arguments for 'gromax analyze'")
     analyze_group.add_argument("--directory", type=str, help="Path to execution/analysis directory.", metavar="")
     parser.add_argument("--version", action="version", version="alpha")
@@ -73,7 +78,7 @@ def _buildParser() -> argparse.ArgumentParser:
 
 
 def _failWithError(err: str):
-    logging.error(err)
+    logging.getLogger().error(err)
     raise SystemExit(1)
 
 
@@ -81,12 +86,18 @@ def _checkGenerateArgs(args: argparse.Namespace) -> None:
     good_versions: Iterable[str] = ("2016", "2018", "2019")
     if args.gmx_version not in good_versions:
         _failWithError("Invalid gmx version {}, must be one of {}".format(args.gmx_version, good_versions))
-    if not args.cpu_ids:
-        _failWithError("--cpu_ids is required")
-    if not args.gpu_ids:
-        _failWithError("--gpu_ids is required")
-    if not args.run_file:
-        _failWithError("--run_file argument is required")
+    if not args.cpu_ids and not args.num_cpus:
+        _failWithError("One of --cpu_ids or --num_cpus is required")
+    if args.num_cpus:
+        if args.cpu_ids:
+            _failWithError("Cannot specify both --cpu_ids and --num_cpus")
+        args.cpu_ids = ",".join([str(identifier) for identifier in range(args.num_cpus)])
+    if not args.gpu_ids and not args.num_gpus:
+        _failWithError("One of --gpu_ids or --num_gpus is required")
+    if args.num_gpus:
+        if args.gpu_ids:
+            _failWithError("Cannot specify both --gpu_ids and --num_gpus")
+        args.gpu_ids = ",".join([str(identifier) for identifier in range(args.num_gpus)])
 
 
 def _checkArgs(args: argparse.Namespace) -> None:

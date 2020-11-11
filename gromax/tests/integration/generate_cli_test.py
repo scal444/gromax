@@ -36,6 +36,14 @@ class GenerateFailBadArgsTests(unittest.TestCase):
         self.cmds.extend(["--gmx_version", "2019", "--cpu_ids", "0,1,2", "--run_file", "test.sh"])
         self.assertGreater(self._run_and_get_rc(), 0)
 
+    def testMultipleCpuOptions(self):
+        self.cmds.extend(["--gmx_version", "2019", "--cpu_ids", "0,1,2", "--num_cpus", "3", "--gpu_ids", "0"])
+        self.assertGreater(self._run_and_get_rc(), 0)
+
+    def testMultipleGpuOptions(self):
+        self.cmds.extend(["--gmx_version", "2019", "--gpu_ids", "0,1,2", "--num_gpus", "3", "--cpu_ids", "0"])
+        self.assertGreater(self._run_and_get_rc(), 0)
+
     def testGmx2020(self):
         self.cmds.extend(["--gmx_version", "2020", "--cpu_ids", "0,1,2", "--run_file", "test.sh"])
         self.assertGreater(self._run_and_get_rc(), 0)
@@ -91,6 +99,16 @@ class GenerateSuccessTests(unittest.TestCase):
     def testGmx2019Basic(self):
         self.kvs["--gmx_version"] = "2019"
         self._runAndCompareOutput("generate_test_default_2019.sh")
+
+    def testCustomHardwareIds(self):
+        self.kvs = {
+            "--num_cpus": "4",
+            "--num_gpus": "2",
+            "--gmx_version": "2018",
+            "--run_file": tempfile.mkstemp()[1]
+        }
+        # This is equivalent to the default 2018 test cases and should not generate any different input.
+        self._runAndCompareOutput("generate_test_default_2018.sh")
 
     def testCustomExecutableGmx(self):
         self.kvs["--gmx_executable"] = "/path/to/gmx_mpi"
