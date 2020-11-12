@@ -5,6 +5,10 @@ Right now Gromax can create a bash script for benchmarking and analyze results, 
 benchmarks. An execution framework ("gromax execute") would remove the need for a separate bash script, and would
 allow cool features like randomization of execution order to reduce hardware bias.
 
+### Programatically expose all results for data analysis
+This will be useful for anyone wanting to do some in-depth analysis of the various factors leading to optimal Gromacs
+performance
+
 ### Automatic hardware detection
 If gromax is installed on a computer that will be benchmarked, it would be cool to have Gromax autodetect the
 hardware rather than have manual input.

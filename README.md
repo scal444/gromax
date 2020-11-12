@@ -42,7 +42,10 @@ in [the examples doc](docs/examples.md)!
 ## Notes
 - Gromax is designed for single node optimization and works best with non-MPI gromacs (think gmx binary rather than 
   gmx_mpi). It may work with an MPI-compiled Gromacs, but no guarantees. Non-MPI Gromacs does have a limit of 64
-  threads, which should be sufficient for most purposes. 
+  threads, which should be sufficient for most purposes.
+- Some simulation features (free energy, thermostats) affect which runtime optimizations can be used. Gromax currently
+  does not take these into account, so a few simulation combinations may fail with valid errors. Send me an email
+  or open up a bug report if you're unsure if this is the case with your failures.
 
 ## Contributing
 - Feel free to file an issue bug/feature request, or create a PR. There is a 
