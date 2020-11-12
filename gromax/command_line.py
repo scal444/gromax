@@ -51,7 +51,7 @@ def _buildParser() -> argparse.ArgumentParser:
 
     generate_group = parser.add_argument_group("generate", "arguments for 'gromax generate'")
     generate_group.add_argument('--gmx_version', type=str, metavar="",
-                                help='Gromacs version - "2016", "2018", or "2019"', )
+                                help='Gromacs version - "2016", "2018", "2019", or "2020"', )
     generate_group.add_argument("--run_file", type=str, help="Path to bash benchmark script to create.",
                                 default="benchmark.sh", metavar="")
     generate_group.add_argument("--gmx_executable", type=str, default="gmx", metavar="", help=(
@@ -83,7 +83,7 @@ def _failWithError(err: str):
 
 
 def _checkGenerateArgs(args: argparse.Namespace) -> None:
-    good_versions: Iterable[str] = ("2016", "2018", "2019")
+    good_versions: Iterable[str] = ("2016", "2018", "2019", "2020")
     if args.gmx_version not in good_versions:
         _failWithError("Invalid gmx version {}, must be one of {}".format(args.gmx_version, good_versions))
     if not args.cpu_ids and not args.num_cpus:

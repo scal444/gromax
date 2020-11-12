@@ -155,8 +155,11 @@ def _createVersionedOptions(base_opts: ParameterSet, hw_config: HardwareConfig, 
             return params["pme"] == "gpu" and params["ntmpi"] > 1
         options = applyOptionIf(options, "npme", 1, nPmePredicate)
     if gmx_version >= "2019":
+        # Note that this is valid even if PME=CPU, it's just nb=GPU that's mandatory, which is guaranteed here.
         options = applyOptionToAll(options, "bonded", ["cpu", "gpu"])
-    # TODO add 'update' for 2020.
+    if gmx_version >= "2020":
+        # Similarly to bonded, update=GPU only needs nb=gpu and any combination of pme, bonded, and update is allowed
+        options = applyOptionToAll(options, "update", ["cpu", "gpu"])
     # Add gputasks
     for opt in options:
         if opt.get("nb") == "gpu":

@@ -603,6 +603,7 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "nb": "gpu",
                 "pme": "cpu",
                 "bonded": "cpu",
+                "update": "gpu",
                 "gputasks": "0000"
             },
             {
@@ -612,6 +613,7 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "nb": "gpu",
                 "bonded": "cpu",
                 "pme": "cpu",
+                "update": "gpu",
                 "gputasks": "00"
             },
             {
@@ -621,6 +623,7 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "nb": "gpu",
                 "bonded": "cpu",
                 "pme": "cpu",
+                "update": "gpu",
                 "gputasks": "0"
             },
             # PME = gpu cases need npme=1
@@ -632,6 +635,7 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "bonded": "cpu",
                 "pme": "gpu",
                 "npme": 1,
+                "update": "gpu",
                 "gputasks": "0000"
             },
             {
@@ -642,6 +646,7 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "bonded": "cpu",
                 "pme": "gpu",
                 "npme": 1,
+                "update": "gpu",
                 "gputasks": "00"
             },
             # Note the double gputask even though there's only one rank
@@ -652,6 +657,7 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "nb": "gpu",
                 "bonded": "cpu",
                 "pme": "gpu",
+                "update": "gpu",
                 "gputasks": "00"
             },
 
@@ -663,6 +669,7 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "nb": "gpu",
                 "bonded": "gpu",
                 "pme": "cpu",
+                "update": "gpu",
                 "gputasks": "0000"
             },
             {
@@ -672,6 +679,7 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "nb": "gpu",
                 "bonded": "gpu",
                 "pme": "cpu",
+                "update": "gpu",
                 "gputasks": "00"
             },
             {
@@ -681,6 +689,7 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "nb": "gpu",
                 "bonded": "gpu",
                 "pme": "cpu",
+                "update": "gpu",
                 "gputasks": "0"
             },
             # PME = gpu cases need npme=1
@@ -692,6 +701,7 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "bonded": "gpu",
                 "pme": "gpu",
                 "npme": 1,
+                "update": "gpu",
                 "gputasks": "0000"
             },
             {
@@ -702,6 +712,7 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "bonded": "gpu",
                 "pme": "gpu",
                 "npme": 1,
+                "update": "gpu",
                 "gputasks": "00"
             },
             # Note the double gputask even though there's only one rank
@@ -712,6 +723,138 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "nb": "gpu",
                 "bonded": "gpu",
                 "pme": "gpu",
+                "update": "gpu",
+                "gputasks": "00"
+            },
+            # update = cpu cases
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "pme": "cpu",
+                "bonded": "cpu",
+                "update": "cpu",
+                "gputasks": "0000"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "cpu",
+                "update": "cpu",
+                "gputasks": "00"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 1,
+                "ntomp": 4,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "cpu",
+                "update": "cpu",
+                "gputasks": "0"
+            },
+            # PME = gpu cases need npme=1
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "gpu",
+                "npme": 1,
+                "update": "cpu",
+                "gputasks": "0000"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "gpu",
+                "npme": 1,
+                "update": "cpu",
+                "gputasks": "00"
+            },
+            # Note the double gputask even though there's only one rank
+            {
+                **self.expected_base,
+                "ntmpi": 1,
+                "ntomp": 4,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "gpu",
+                "update": "cpu",
+                "gputasks": "00"
+            },
+
+            # Bonded = gpu cases
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "cpu",
+                "update": "cpu",
+                "gputasks": "0000"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "cpu",
+                "update": "cpu",
+                "gputasks": "00"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 1,
+                "ntomp": 4,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "cpu",
+                "update": "cpu",
+                "gputasks": "0"
+            },
+            # PME = gpu cases need npme=1
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "gpu",
+                "npme": 1,
+                "update": "cpu",
+                "gputasks": "0000"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "gpu",
+                "npme": 1,
+                "update": "cpu",
+                "gputasks": "00"
+            },
+            # Note the double gputask even though there's only one rank
+            {
+                **self.expected_base,
+                "ntmpi": 1,
+                "ntomp": 4,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "gpu",
+                "update": "cpu",
                 "gputasks": "00"
             },
         ]
@@ -729,6 +872,7 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "nb": "gpu",
                 "bonded": "cpu",
                 "pme": "cpu",
+                "update": "cpu",
                 "gputasks": "0011"
             },
             {
@@ -738,6 +882,7 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "nb": "gpu",
                 "bonded": "cpu",
                 "pme": "cpu",
+                "update": "cpu",
                 "gputasks": "01"
             },
             # PME = gpu cases need npme=1
@@ -749,6 +894,7 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "bonded": "cpu",
                 "pme": "gpu",
                 "npme": 1,
+                "update": "cpu",
                 "gputasks": "0011"
             },
             {
@@ -759,6 +905,7 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "bonded": "cpu",
                 "pme": "gpu",
                 "npme": 1,
+                "update": "cpu",
                 "gputasks": "01"
             },
             # bonded = gpu
@@ -769,6 +916,7 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "nb": "gpu",
                 "bonded": "gpu",
                 "pme": "cpu",
+                "update": "cpu",
                 "gputasks": "0011"
             },
             {
@@ -778,6 +926,7 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "nb": "gpu",
                 "bonded": "gpu",
                 "pme": "cpu",
+                "update": "cpu",
                 "gputasks": "01"
             },
             # PME = gpu cases need npme=1
@@ -789,6 +938,7 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "bonded": "gpu",
                 "pme": "gpu",
                 "npme": 1,
+                "update": "cpu",
                 "gputasks": "0011"
             },
             {
@@ -799,9 +949,97 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "bonded": "gpu",
                 "pme": "gpu",
                 "npme": 1,
+                "update": "cpu",
                 "gputasks": "01"
             },
-
+            # update = gpu options
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "cpu",
+                "update": "gpu",
+                "gputasks": "0011"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "cpu",
+                "update": "gpu",
+                "gputasks": "01"
+            },
+            # PME = gpu cases need npme=1
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "gpu",
+                "npme": 1,
+                "update": "gpu",
+                "gputasks": "0011"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "gpu",
+                "npme": 1,
+                "update": "gpu",
+                "gputasks": "01"
+            },
+            # bonded = gpu
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "cpu",
+                "update": "gpu",
+                "gputasks": "0011"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "cpu",
+                "update": "gpu",
+                "gputasks": "01"
+            },
+            # PME = gpu cases need npme=1
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "gpu",
+                "npme": 1,
+                "update": "gpu",
+                "gputasks": "0011"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "gpu",
+                "npme": 1,
+                "update": "gpu",
+                "gputasks": "01"
+            },
         ]
         self.assertCountEqual(result, expected)
 

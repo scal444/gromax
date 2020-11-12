@@ -100,6 +100,10 @@ class GenerateSuccessTests(unittest.TestCase):
         self.kvs["--gmx_version"] = "2019"
         self._runAndCompareOutput("generate_test_default_2019.sh")
 
+    def testGmx2020Basic(self):
+        self.kvs["--gmx_version"] = "2020"
+        self._runAndCompareOutput("generate_test_default_2020.sh")
+
     def testCustomHardwareIds(self):
         self.kvs = {
             "--num_cpus": "4",
