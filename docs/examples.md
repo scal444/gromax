@@ -31,11 +31,12 @@ gromax generate --gmx_version=2020, --num_cpus=8 --gpu_ids=1,2
 
 # CPUs can be strided, if e.g. one has a hyperthreaded system and wants 1 thread per physical core.
 # This will benchmark on cores 0,2,4,and 6.
+# NOTE: This is experimental and not yet well tested.
 gromax generate --gmx_version=2020 --cpu_ids=0:2:7 --gpu_ids=0
 ```
 
 #### Some configuration options for the run script.
-**NOTE: Each of these options can also easily be set in the first few lines of the benchmark script.** 
+*NOTE: Each of these options can also easily be set in the first few lines of the benchmark script.* 
 ```shell script
 # Specify a gmx binary that isn't in your shell's PATH.
 gromax generate --gmx_version=2020 --cpu_ids=0-39 --gpu_ids=0-4 --gmx_executable="/path/to/gmx"
