@@ -138,3 +138,40 @@ def parseDirectoryStructure(directory: str) -> allDirectoryContent:
             group_result[trial_index] = {key: val for key, val in _getComponentFoldersWithIndices(trial_dir).items()}
         result[group_index] = group_result
     return result
+
+
+def _maxItems(content: allDirectoryContent):
+    """
+        Given a nested dictionary, determine the max number of items in the first subdictionary. So given,
+        {
+            1: {1,2,3},
+            2: {3,4},
+            3: {1}
+        }
+        this function will retun 3, as the first subdictionary had 3 items. Does not recursively nest, even if the
+        items of the subdictionary are dictionaries themselves.
+    """
+    max_trials = 0
+    for trials in content.values():
+        if len(trials) > max_trials:
+            max_trials = len(trials)
+    return max_trials
+
+
+def SanitizeDirectoryStructure(content: allDirectoryContent):
+    """
+        Logs missing trials, and purges trials with missing components.
+    """
+    max_trials = _maxItems(content)
+    for group_idx, group in content.items():
+        if len(group) < max_trials:
+            logging.getLogger("gromax").warning(
+                "Group {} has only {} trials, other groups have up to {}".format(group_idx, len(group), max_trials))
+        max_components = _maxItems(group)
+        # Can't use items() since we're dynamically changing the size of the dict on error cases.
+        for trial_idx, trial in zip(list(group.keys()), list(group.values())):
+            if len(trial) < max_components:
+                logging.getLogger("gromax").warning(
+                    "Group {} trial {} has only {} components, other trials have up to {}, discarding trial".format(
+                        group_idx, trial_idx, len(trial), max_components))
+                del group[trial_idx]

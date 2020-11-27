@@ -1,14 +1,14 @@
 import unittest
 
 from gromax.log_parser import _performanceRegexOp, _typeOfParam, _convert, _commandInputRegexOp, _fullCommandRegexOp
-from gromax.log_parser import LogParser, BasicParser
+from gromax.log_parser import LogParser, BasicParser, ParsePerformanceError, ParseGmxCommandError
 
 
 class TypeOfParamTest(unittest.TestCase):
     def testInvalidInput(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ParseGmxCommandError):
             _typeOfParam("invalid")
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ParseGmxCommandError):
             _typeOfParam("")
 
     def testIntType(self):
@@ -27,7 +27,7 @@ class TypeOfParamTest(unittest.TestCase):
 class ConvertTest(unittest.TestCase):
     # noinspection PyTypeChecker
     def testInvalidInput(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ParseGmxCommandError):
             _convert("val", None)
 
     def testStr(self):
@@ -60,7 +60,7 @@ class CommandInputParserTest(unittest.TestCase):
 
     def testInvalid(self):
         args = "gmx mdrun -maxh blah"
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ParseGmxCommandError):
             _commandInputRegexOp(self._combineArgs(args))
 
     def testIntParam(self):
@@ -128,10 +128,17 @@ class LogParserTest(unittest.TestCase):
         parser = LogParser()
         self.assertDictEqual(parser.parse(self.contents), {})
 
-    def testOpButNoMatch(self):
+    def testOpButNoCmdMatch(self):
         parser = LogParser()
         parser.addOp(_commandInputRegexOp)
-        self.assertDictEqual(parser.parse(self.match_perf), {})
+        with self.assertRaises(ParseGmxCommandError):
+            parser.parse(self.match_perf)
+
+    def testOpButNoPerfMatch(self):
+        parser = LogParser()
+        parser.addOp(_performanceRegexOp)
+        with self.assertRaises(ParsePerformanceError):
+            parser.parse(self.match_cmd)
 
     def testSingleOp(self):
         parser = LogParser()

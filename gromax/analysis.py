@@ -3,7 +3,7 @@ import math
 import re
 # import pandas as pd
 from gromax.file_io import allDirectoryContent
-from gromax.log_parser import BasicParser
+from gromax.log_parser import BasicParser, ParseGmxCommandError, ParsePerformanceError
 from typing import Dict, List, Union, Any, Callable
 
 # Possible data types.
@@ -61,8 +61,9 @@ def _getGroupRunString(group: singleGroupData) -> str:
         Returns the combined command line argument to dispatch all runs in a group trial.
     """
     lines: List[str] = []
-    for key in sorted(group[0].keys()):
-        component: singleRunData = group[0][key]
+    first_trial: singleTrialData = group[sorted(group.keys())[0]]
+    for component_key in sorted(first_trial.keys()):
+        component: singleRunData = first_trial[component_key]
         lines.append(component["full_command_line"])
     return " &\n".join(lines)
 
@@ -89,11 +90,16 @@ def _analyzeGroupData(group: singleGroupData) -> groupStats:
         "command_string": _getGroupRunString(group),
         "performance":  sum(trial_performances) / float(len(trial_performances)),
         # take number of sims per trial from first trial.
-        "concurrent_sims": len(group[0])
+        "concurrent_sims": len(list(group.values())[0])
     }
 
 
 class GromaxData(object):
+    """
+        Holds gromax data points indexed in the group/trial/component layout.
+        TODO - check double insertion of same key
+        TODO - type safety
+    """
     def __init__(self):
         self._data: allData = {}
 
@@ -106,16 +112,26 @@ class GromaxData(object):
             self._data[group][trial][component]: singleTrialData = {}
         self._data[group][trial][component][key]: dataPoint = data_point
 
+    def remove(self, group: int, trial: int):
+        """
+            Safely remove a trial if it exists.
+        """
+        if group in self._data:
+            if trial in self._data[group]:
+                del self._data[group][trial]
+
     def groupStatistics(self) -> Dict[int, groupStats]:
         results: Dict[int, groupStats] = {}
         for group_index, group_content in self._data.items():
-            results[group_index] = _analyzeGroupData(group_content)
+            if not len(group_content) == 0:
+                results[group_index] = _analyzeGroupData(group_content)
         return results
 
 
 def constructGromaxData(directory_structure: allDirectoryContent) -> GromaxData:
     data: GromaxData = GromaxData()
     parser: BasicParser = BasicParser()
+    logger: logging.Logger = logging.getLogger("gromax")
     for group_index, group_content in directory_structure.items():
         for trial_index, trial_content in group_content.items():
             for component_index, component_file in trial_content.items():
@@ -123,9 +139,21 @@ def constructGromaxData(directory_structure: allDirectoryContent) -> GromaxData:
                     with open(component_file, 'r') as fin:
                         contents: str = fin.read()
                 except IOError as e:
-                    logging.getLogger("gromax").warning("Unable to open log file {}: {}".format(component_file, e))
-                    continue
-                extracted_elements: Dict[str, dataPoint] = parser.parse(contents)
+                    logger.warning("Unable to open log file {}: {}, discarding trial".format(component_file, e))
+                    data.remove(group_index, trial_index)
+                    break
+                try:
+                    extracted_elements: Dict[str, dataPoint] = parser.parse(contents)
+                except ParseGmxCommandError:
+                    logger.warning(
+                        "Unable to parse command line input in file {}, discarding trial".format(component_file))
+                    data.remove(group_index, trial_index)
+                    break
+                except ParsePerformanceError:
+                    logger.warning(
+                        "Unable to parse performance in file {}, discarding trial".format(component_file))
+                    data.remove(group_index, trial_index)
+                    break
                 for key, val in extracted_elements.items():
                     data.insertDataPoint(group_index, trial_index, component_index, key, val)
     return data

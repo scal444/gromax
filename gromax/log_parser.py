@@ -40,7 +40,7 @@ def _typeOfParam(param: str) -> Type:
             _typeOfParam(mahx) ->  float
 
         Raises:
-            ValueError, for unknown key
+            ParseGmxCommandError, for unknown key
     """
     types: Dict = {
         "npme": int,
@@ -73,7 +73,7 @@ def _typeOfParam(param: str) -> Type:
     try:
         return types[param]
     except KeyError:
-        raise ValueError("Invalid gromacs paramter: {}".format(param))
+        raise ParseGmxCommandError("Invalid gromacs parameter: {}".format(param))
 
 
 def _convert(val: str, val_type: Type) -> valueType:
@@ -82,14 +82,17 @@ def _convert(val: str, val_type: Type) -> valueType:
     """
     if val_type == str:
         return val
-    if val_type == int:
-        return int(val)
-    if val_type == float:
-        return float(val)
+    try:
+        if val_type == int:
+            return int(val)
+        if val_type == float:
+            return float(val)
+    except ValueError:
+        raise ParseGmxCommandError("Invalid input {} for type {}".format(val, val_type))
     # Presence of the key indicates that this flag is turned on.
     if val_type == bool:
         return True
-    raise ValueError("Unexpected type input {} for value".format(val_type, val))
+    raise ParseGmxCommandError("Unexpected type input {} for value".format(val_type, val))
 
 
 def _commandInputRegexOp(contents: str) -> Optional[Dict]:
@@ -141,10 +144,27 @@ def _performanceRegexOp(contents: str) -> Optional[Dict]:
     return None
 
 
+class ParsePerformanceError(Exception):
+    pass
+
+
+class ParseGmxCommandError(Exception):
+    pass
+
+
+def _handleFailure(op: regexOp):
+    """
+        TODO - configurable error handling
+    """
+    if op in (_commandInputRegexOp, _fullCommandRegexOp):
+        raise ParseGmxCommandError()
+    if op == _performanceRegexOp:
+        raise ParsePerformanceError()
+
+
 class LogParser(object):
     """
         An object with a list of regex operations to perform on any input string.
-        TODO add a failure handler with configurable severity level
     """
     def __init__(self, ops: Iterable[regexOp] = ()):
         """
@@ -168,13 +188,10 @@ class LogParser(object):
         for op in self._operations:
             op_match: Optional[Dict] = op(contents)
             if op_match is None:
-                self._handleFailure()
+                _handleFailure(op)
             else:
                 result.update(op_match)
         return result
-
-    def _handleFailure(self):
-        pass
 
 
 def BasicParser() -> LogParser:

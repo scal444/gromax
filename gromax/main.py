@@ -4,7 +4,7 @@ import logging
 import os
 import sys
 from gromax.analysis import GromaxData, constructGromaxData, reportStatistics
-from gromax.file_io import parseDirectoryStructure, allDirectoryContent
+from gromax.file_io import parseDirectoryStructure, allDirectoryContent, SanitizeDirectoryStructure
 from gromax.combination_generator import createRunOptionsForConfigGroup
 from gromax.command_line import checkArgs, parseArgs, parseIDString
 from gromax.hardware_config import HardwareConfig, generateConfigSplitOptions
@@ -60,9 +60,9 @@ def _executeAnalyzeWorkflow(args: argparse.Namespace) -> None:
     logger.info("Analyzing gromax run results in directory {}.".format(folder))
     directory_content: allDirectoryContent = parseDirectoryStructure(folder)
     if len(directory_content) == 0:
-        # TODO link what directory output should look like when documented.
         logger.error("Analysis path {} contains no results in gromax format, exiting.".format(folder))
         sys.exit(1)
+    SanitizeDirectoryStructure(directory_content)
     result_data: GromaxData = constructGromaxData(directory_content)
     sys.stdout.write(reportStatistics(result_data.groupStatistics()))
 
