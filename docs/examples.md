@@ -34,6 +34,13 @@ gromax generate --gmx_version=2020, --num_cpus=8 --gpu_ids=1,2
 # NOTE: This is experimental and not yet well tested.
 gromax generate --gmx_version=2020 --cpu_ids=0:2:7 --gpu_ids=0
 ```
+#### Customizing how gromax will explore your hardware.
+```shell script
+# If your workflows absolutely require a single long simulation, and you can't parallelize at all, you can have gromax
+# ignore all the various possible hardware breakdowns for multiple concurrent simulations. Using this parameter will
+# have gromax generate ONLY benchmarks for single simulations that use all of the given hardware.
+gromax generate --gmx_version=2020 --cpu_ids=0:7 --gpu_ids=0 --single_sim_only
+```
 
 #### Some configuration options for the run script.
 *NOTE: Each of these options can also easily be set in the first few lines of the benchmark script.* 

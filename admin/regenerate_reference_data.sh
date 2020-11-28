@@ -41,8 +41,10 @@ $PYTHON "$exe" ${RUNBASE} --run_file="$OUTDIR"/generate_test_default_2016.sh --g
 $PYTHON "$exe" ${RUNBASE} --run_file="$OUTDIR"/generate_test_custom_tpr.sh --gmx_version=2016 \
   --tpr=custom_tpr.tpr
 
-
 # Test with strange CPU/GPU count that still works
 $PYTHON "$exe" generate --cpu_ids=0-6 --gpu_ids=0,1 --run_file="$OUTDIR"/generate_test_odd_cpu_count.sh --gmx_version=2016
 
-exit 0
+# Test the single_sim_only argument
+$PYTHON "$exe" ${RUNBASE} --run_file="$OUTDIR"/generate_test_single_sim_only.sh --gmx_version=2016 --single_sim_only
+
+  exit 0

@@ -60,7 +60,6 @@ def _buildParser() -> argparse.ArgumentParser:
     generate_group.add_argument("--trials_per_group", type=int, default=3, metavar="",
                                 help="Number of times to run each parameter set.")
     generate_group.add_argument("--tpr", type=str, help="Path to the tpr file to benchmark.", metavar="")
-    # TODO add examples/documentation
     generate_group.add_argument("--cpu_ids", type=str, help="CPUs to be run on.", metavar="", default="")
     generate_group.add_argument("--gpu_ids", type=str, help="GPUs to be run on.", metavar="", default="")
     generate_group.add_argument("--num_cpus", type=int, metavar="",
@@ -69,6 +68,8 @@ def _buildParser() -> argparse.ArgumentParser:
     generate_group.add_argument("--num_gpus", type=int, metavar="",
                                 help="Number of GPUs to run on, indexed from 0. Use this option OR --gpu_ids (if not "
                                      "using all GPUs on the node), but not both.", default=0)
+    generate_group.add_argument("--single_sim_only", action="store_true",
+                                help="If set, do not divide the hardware among multiple concurrent simulations")
     analyze_group = parser.add_argument_group("analyze", "arguments for 'gromax analyze'")
     analyze_group.add_argument("--directory", type=str, help="Path to execution/analysis directory.", metavar="")
     parser.add_argument("--version", action="version", version="alpha")

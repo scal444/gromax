@@ -59,7 +59,8 @@ class GenerateSuccessTests(unittest.TestCase):
     def _combineArgs(self):
         for key, val in self.kvs.items():
             self.args.append(key)
-            self.args.append(val)
+            if val is not None:
+                self.args.append(val)
 
     def _runAndCompareOutput(self, reference_file: str):
         """
@@ -133,3 +134,7 @@ class GenerateSuccessTests(unittest.TestCase):
     def testWeirdCount(self):
         self.kvs["--cpu_ids"] = "0-6"
         self._runAndCompareOutput("generate_test_odd_cpu_count.sh")
+
+    def testSingleSimOnly(self):
+        self.kvs["--single_sim_only"] = None
+        self._runAndCompareOutput("generate_test_single_sim_only.sh")

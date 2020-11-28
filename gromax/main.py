@@ -34,7 +34,10 @@ def _executeGenerateWorkflow(args: argparse.Namespace) -> None:
         cpu_ids = cpu_ids[:-modval]
     hw_config: HardwareConfig = HardwareConfig(cpu_ids=cpu_ids, gpu_ids=gpu_ids)
     # generate options
-    config_splits: List[List[HardwareConfig]] = generateConfigSplitOptions(hw_config)
+    if args.single_sim_only:
+        config_splits: List[List[HardwareConfig]] = [[hw_config]]
+    else:
+        config_splits: List[List[HardwareConfig]] = generateConfigSplitOptions(hw_config)
     logger.debug("Generated {} hardware config breakdowns".format(len(config_splits)))
     run_opts: List[List[Dict]] = []
     for config_split in config_splits:
