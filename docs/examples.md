@@ -2,9 +2,8 @@
 These examples generate bash scripts that can be used to benchmark Gromacs on your hardware.
 #### With default options
 ```shell script
-# cpu_ids, gpu_ids, run_file and gmx_version are mandatory. Options such as the number of trials and tpr to
+# cpu_ids, gpu_ids, and gmx_version are mandatory. Options such as the number of trials and tpr to
 # benchmark are easily configurable at the top of the output script.
-# TODO Update when runfile is no longer mandatory.
 # For Gromacs 2019: 
 gromax generate --num_cpus=4 --num_gpus=2 --gmx_version=2019 --run_file=benchmark_gmx2019.sh
 # For Gromacs 2018:
@@ -56,13 +55,13 @@ gromax generate --gmx_version=2020 --cpu_ids=0-39 --gpu_ids=0-4 --tpr=benchmark.
 ```
 
 ## gromax analyze examples
-#### Execute from current directory.
+#### Analyze if results are in current directory.
 ```shell script
 # Equivalent to --directory=`pwd`, will only succeed if benchmark groups are directly under this folder.
 gromax analyze
 ```
 
-### from specific folder
+#### Analyze a specific folder
 ```shell script
 # Group results should be in /path/to/results.
 gromax analyze --directory=/path/to/results
