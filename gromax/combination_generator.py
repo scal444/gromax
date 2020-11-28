@@ -7,6 +7,9 @@ from typing import List, Dict, Set, Any, Callable
 # Constants
 _SUPPORTED_VERSIONS: Set[str] = {"2016", "2018", "2019", "2020"}
 
+# TODO: consolidate constants like this and potentially make configurable
+_MAX_RANKS_PME_GPU = 8
+
 # Convenience definitions
 # A grouping of GPU ids.
 GpuIds = List[int]
@@ -22,7 +25,7 @@ def genNtmpiOptions(total_procs: int, num_gpus: int, max_sims_per_gpu: int = 4) 
     """
         Breaks down the possible combinations of ntmpi for the given number of GPUs. For example, with
         2 GPUs and 6 CPUs, the combinations are:
-            ntmpi = 2, ntmomp = 3, with the 1st GPU assigned to the first rank, and 2nd to the 2nd rank
+            ntmpi = 2, ntomp = 3, with the 1st GPU assigned to the first rank, and 2nd to the 2nd rank
             ntmpi = 6, ntomp = 1, with the first GPU split among the first 3 ranks and so on.
 
             Note that in this example ntmpi=3 does not work, because you can't eveny split 2 GPUs among
@@ -125,6 +128,13 @@ def applyOptionIf(parameters: List[ParameterSet], key: str, value: Any,
     return new_parameters
 
 
+def pruneOptionIf(parameters: List[ParameterSet], predicate: Callable[[ParameterSet], bool]) -> List[ParameterSet]:
+    """
+        Removes a parameterset from the possibilities if it meets the predicate conditions
+    """
+    return [option for option in parameters if not predicate(option)]
+
+
 def _createVersionedOptions(base_opts: ParameterSet, hw_config: HardwareConfig, gmx_version: str) -> ParameterSetGroup:
     """
         Given a partial base parameter set, a hardware config, and a target Gromacs version, creates all of the
@@ -149,14 +159,22 @@ def _createVersionedOptions(base_opts: ParameterSet, hw_config: HardwareConfig, 
     if gmx_version >= "2018":
         options = applyOptionToAll(options, "pme", ["cpu", "gpu"])
 
+        # Cap max ranks for PME GPU
+        def excessRanksPredicate(params: ParameterSet) -> bool:
+            return params["pme"] == "gpu" and params["ntmpi"] > _MAX_RANKS_PME_GPU
+        options = pruneOptionIf(options, excessRanksPredicate)
+
         # set npme if more than one rank.
         def nPmePredicate(params: ParameterSet) -> bool:
             # TODO verify that this is correct on all versions
             return params["pme"] == "gpu" and params["ntmpi"] > 1
         options = applyOptionIf(options, "npme", 1, nPmePredicate)
     if gmx_version >= "2019":
+        # Note that this is valid even if PME=CPU, it's just nb=GPU that's mandatory, which is guaranteed here.
         options = applyOptionToAll(options, "bonded", ["cpu", "gpu"])
-    # TODO add 'update' for 2020.
+    if gmx_version >= "2020":
+        # Similarly to bonded, update=GPU only needs nb=gpu and any combination of pme, bonded, and update is allowed
+        options = applyOptionToAll(options, "update", ["cpu", "gpu"])
     # Add gputasks
     for opt in options:
         if opt.get("nb") == "gpu":

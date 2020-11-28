@@ -1,5 +1,5 @@
 import unittest
-from gromax.analysis import standardError, _commonKeyVals
+from gromax.analysis import standardError, _commonKeyVals, GromaxData
 
 
 class StandardErrorTests(unittest.TestCase):
@@ -28,3 +28,25 @@ class CommonKeyValsTest(unittest.TestCase):
         b = {"a": 5, "b": 2, "c": "five"}
         expected = {"b": 2, "c": "five"}
         self.assertDictEqual(_commonKeyVals(a, b), expected)
+
+
+class GmxDataTest(unittest.TestCase):
+    """
+        TODO - proper testing of reporting statis.
+    """
+    def setUp(self):
+        self.data = GromaxData()
+
+    def testInsertionsSucceeds(self):
+        keys = ["one", "two", "three", "four"]
+        vals = [1, 2.5, "three", False]
+        for k, v in zip(keys, vals):
+            self.data.insertDataPoint(0, 0, 0, k, v)
+
+    def testRemoveWorks(self):
+        self.data.insertDataPoint(0, 1, 2, "hi", "bye")
+        self.data.remove(0, 1)
+        self.assertDictEqual(self.data.groupStatistics(), {})
+
+    def testRemoveOnEmptyDoesntCrash(self):
+        self.data.remove(0, 0)

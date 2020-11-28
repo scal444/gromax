@@ -31,7 +31,7 @@ class SelectWorkflowTest(unittest.TestCase):
 
 class SetLogLevelTest(unittest.TestCase):
     def setUp(self):
-        self.logger = logging.getLogger()
+        self.logger = logging.getLogger("gromax")
 
     def testPassModes(self):
         gmx._setLoggingLevel(self.logger, "debug")

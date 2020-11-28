@@ -4,9 +4,9 @@ import logging
 import os
 import sys
 from gromax.analysis import GromaxData, constructGromaxData, reportStatistics
-from gromax.file_io import parseDirectoryStructure, allDirectoryContent
+from gromax.file_io import parseDirectoryStructure, allDirectoryContent, SanitizeDirectoryStructure
 from gromax.combination_generator import createRunOptionsForConfigGroup
-from gromax.command_line import parseArgs, parseIDString
+from gromax.command_line import checkArgs, parseArgs, parseIDString
 from gromax.hardware_config import HardwareConfig, generateConfigSplitOptions
 from gromax.output import ParamsToString, WriteRunScript
 from typing import Callable, List, Dict
@@ -16,16 +16,28 @@ from typing import Callable, List, Dict
 
 
 def _executeGenerateWorkflow(args: argparse.Namespace) -> None:
-    logger: logging.Logger = logging.getLogger()
+    logger: logging.Logger = logging.getLogger("gromax")
     logger.info("Generating run options.")
     # Assign hardware config
     cpu_ids: List[int] = parseIDString(args.cpu_ids)
     logger.info("CPU IDs: {}".format(cpu_ids))
+    num_cpus: int = len(cpu_ids)
+    if num_cpus % 2 == 1:
+        logger.warning("Detected an odd number of CPU IDs ({}), this is atypical.".format(num_cpus))
     gpu_ids: List[int] = parseIDString(args.gpu_ids)
     logger.info("GPU IDs: {}".format(gpu_ids))
+    num_gpus: int = len(gpu_ids)
+    modval: int = num_cpus % num_gpus
+    if modval != 0:
+        logger.warning("Number of CPUs({}) is not divisible by the number of GPUs({}), will only use {} CPUs.".format(
+            num_cpus, num_gpus, num_cpus - modval))
+        cpu_ids = cpu_ids[:-modval]
     hw_config: HardwareConfig = HardwareConfig(cpu_ids=cpu_ids, gpu_ids=gpu_ids)
     # generate options
-    config_splits: List[List[HardwareConfig]] = generateConfigSplitOptions(hw_config)
+    if args.single_sim_only:
+        config_splits: List[List[HardwareConfig]] = [[hw_config]]
+    else:
+        config_splits: List[List[HardwareConfig]] = generateConfigSplitOptions(hw_config)
     logger.debug("Generated {} hardware config breakdowns".format(len(config_splits)))
     run_opts: List[List[Dict]] = []
     for config_split in config_splits:
@@ -40,7 +52,7 @@ def _executeGenerateWorkflow(args: argparse.Namespace) -> None:
 
 
 def _executeAnalyzeWorkflow(args: argparse.Namespace) -> None:
-    logger: logging.Logger = logging.getLogger()
+    logger: logging.Logger = logging.getLogger("gromax")
     folder: str = args.directory
     if folder is None:
         logger.info("No directory specified using --directory, using current directory.")
@@ -50,6 +62,10 @@ def _executeAnalyzeWorkflow(args: argparse.Namespace) -> None:
         sys.exit(1)
     logger.info("Analyzing gromax run results in directory {}.".format(folder))
     directory_content: allDirectoryContent = parseDirectoryStructure(folder)
+    if len(directory_content) == 0:
+        logger.error("Analysis path {} contains no results in gromax format, exiting.".format(folder))
+        sys.exit(1)
+    SanitizeDirectoryStructure(directory_content)
     result_data: GromaxData = constructGromaxData(directory_content)
     sys.stdout.write(reportStatistics(result_data.groupStatistics()))
 
@@ -70,7 +86,7 @@ def _selectWorkflow(args: argparse.Namespace) -> Callable[[argparse.Namespace], 
 
 
 def _setLoggingLevel(logger: logging.Logger, log_level: str):
-    fmt: str = '%(message)s'
+    fmt: str = '%(levelname)-8s%(message)s'
     if log_level == "info":
         logger.setLevel(logging.INFO)
     elif log_level == "debug":
@@ -88,9 +104,10 @@ def _setLoggingLevel(logger: logging.Logger, log_level: str):
 
 
 def gromax():
+    logger: logging.Logger = logging.getLogger("gromax")
     parsed_args: argparse.Namespace = parseArgs(sys.argv[1:])
-    logger: logging.Logger = logging.getLogger()
     _setLoggingLevel(logger, parsed_args.log_level)
+    checkArgs(parsed_args)
     logger.info("Executing gromax.")
     workflow: Callable[[argparse.Namespace], None] = _selectWorkflow(parsed_args)
     workflow(parsed_args)
