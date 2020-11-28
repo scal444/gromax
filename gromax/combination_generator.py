@@ -7,6 +7,9 @@ from typing import List, Dict, Set, Any, Callable
 # Constants
 _SUPPORTED_VERSIONS: Set[str] = {"2016", "2018", "2019", "2020"}
 
+# TODO: consolidate constants like this and potentially make configurable
+_MAX_RANKS_PME_GPU = 8
+
 # Convenience definitions
 # A grouping of GPU ids.
 GpuIds = List[int]
@@ -125,6 +128,13 @@ def applyOptionIf(parameters: List[ParameterSet], key: str, value: Any,
     return new_parameters
 
 
+def pruneOptionIf(parameters: List[ParameterSet], predicate: Callable[[ParameterSet], bool]) -> List[ParameterSet]:
+    """
+        Removes a parameterset from the possibilities if it meets the predicate conditions
+    """
+    return [option for option in parameters if not predicate(option)]
+
+
 def _createVersionedOptions(base_opts: ParameterSet, hw_config: HardwareConfig, gmx_version: str) -> ParameterSetGroup:
     """
         Given a partial base parameter set, a hardware config, and a target Gromacs version, creates all of the
@@ -148,6 +158,11 @@ def _createVersionedOptions(base_opts: ParameterSet, hw_config: HardwareConfig, 
 
     if gmx_version >= "2018":
         options = applyOptionToAll(options, "pme", ["cpu", "gpu"])
+
+        # Cap max ranks for PME GPU
+        def excessRanksPredicate(params: ParameterSet) -> bool:
+            return params["pme"] == "gpu" and params["ntmpi"] > _MAX_RANKS_PME_GPU
+        options = pruneOptionIf(options, excessRanksPredicate)
 
         # set npme if more than one rank.
         def nPmePredicate(params: ParameterSet) -> bool:
