@@ -144,14 +144,15 @@ def constructGromaxData(directory_structure: allDirectoryContent) -> GromaxData:
                     break
                 try:
                     extracted_elements: Dict[str, dataPoint] = parser.parse(contents)
-                except ParseGmxCommandError:
+                except ParseGmxCommandError as e:
                     logger.warning(
-                        "Unable to parse command line input in file {}, discarding trial".format(component_file))
+                        "Unable to parse command line input in file {} with {}, discarding trial".format(component_file,
+                                                                                                         e))
                     data.remove(group_index, trial_index)
                     break
-                except ParsePerformanceError:
+                except ParsePerformanceError as e:
                     logger.warning(
-                        "Unable to parse performance in file {}, discarding trial".format(component_file))
+                        "Unable to parse performance in file {} with {}, discarding trial".format(component_file, e))
                     data.remove(group_index, trial_index)
                     break
                 for key, val in extracted_elements.items():

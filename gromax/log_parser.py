@@ -87,7 +87,7 @@ def _convert(val: str, val_type: Type) -> valueType:
             return int(val)
         if val_type == float:
             return float(val)
-    except ValueError:
+    except (ValueError, TypeError):
         raise ParseGmxCommandError("Invalid input {} for type {}".format(val, val_type))
     # Presence of the key indicates that this flag is turned on.
     if val_type == bool:
@@ -124,9 +124,12 @@ def _commandInputRegexOp(contents: str) -> Optional[Dict]:
             key, val = item.strip().split(" ")
         except ValueError:
             key, val = item.strip(), None
+        try:
+            val_type: Type = _typeOfParam(key)
+            result[key] = _convert(val, val_type)
+        except ParseGmxCommandError as e:
+            raise ParseGmxCommandError("{} for key {}".format(e, key))
 
-        val_type: Type = _typeOfParam(key)
-        result[key] = _convert(val, val_type)
     return result
 
 
