@@ -175,6 +175,11 @@ def _createVersionedOptions(base_opts: ParameterSet, hw_config: HardwareConfig, 
     if gmx_version >= "2020":
         # Similarly to bonded, update=GPU only needs nb=gpu and any combination of pme, bonded, and update is allowed
         options = applyOptionToAll(options, "update", ["cpu", "gpu"])
+
+        # PME = cpu, update = GPU only works on single rank simulations
+        def multiRankPredicate(params: ParameterSet):
+            return params["pme"] == "cpu" and params["update"] == "gpu" and params["ntmpi"] > 1
+        options = pruneOptionIf(options, multiRankPredicate)
     # Add gputasks
     for opt in options:
         if opt.get("nb") == "gpu":

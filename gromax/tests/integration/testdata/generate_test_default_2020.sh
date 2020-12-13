@@ -31,7 +31,7 @@ for i in $(seq 1 ${ntrials}); do
   trialdir=${groupdir}/trial_${i}
   mkdir $trialdir
   cd $trialdir
-  $gmx -bonded cpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 01 -nb gpu -noconfout -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 2 -ntomp 2 -pin on -pinoffset 0 -pinstride 1 -pme cpu -resetstep ${resetstep} -s ${tpr} -update gpu
+  $gmx -bonded gpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 01 -nb gpu -noconfout -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 2 -ntomp 2 -pin on -pinoffset 0 -pinstride 1 -pme cpu -resetstep ${resetstep} -s ${tpr} -update cpu
   wait
   cd ${groupdir}
 done
@@ -45,7 +45,7 @@ for i in $(seq 1 ${ntrials}); do
   trialdir=${groupdir}/trial_${i}
   mkdir $trialdir
   cd $trialdir
-  $gmx -bonded gpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 01 -nb gpu -noconfout -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 2 -ntomp 2 -pin on -pinoffset 0 -pinstride 1 -pme cpu -resetstep ${resetstep} -s ${tpr} -update cpu
+  $gmx -bonded cpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 01 -nb gpu -noconfout -npme 1 -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 2 -ntomp 2 -pin on -pinoffset 0 -pinstride 1 -pme gpu -resetstep ${resetstep} -s ${tpr} -update cpu
   wait
   cd ${groupdir}
 done
@@ -59,7 +59,7 @@ for i in $(seq 1 ${ntrials}); do
   trialdir=${groupdir}/trial_${i}
   mkdir $trialdir
   cd $trialdir
-  $gmx -bonded gpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 01 -nb gpu -noconfout -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 2 -ntomp 2 -pin on -pinoffset 0 -pinstride 1 -pme cpu -resetstep ${resetstep} -s ${tpr} -update gpu
+  $gmx -bonded cpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 01 -nb gpu -noconfout -npme 1 -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 2 -ntomp 2 -pin on -pinoffset 0 -pinstride 1 -pme gpu -resetstep ${resetstep} -s ${tpr} -update gpu
   wait
   cd ${groupdir}
 done
@@ -73,7 +73,7 @@ for i in $(seq 1 ${ntrials}); do
   trialdir=${groupdir}/trial_${i}
   mkdir $trialdir
   cd $trialdir
-  $gmx -bonded cpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 01 -nb gpu -noconfout -npme 1 -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 2 -ntomp 2 -pin on -pinoffset 0 -pinstride 1 -pme gpu -resetstep ${resetstep} -s ${tpr} -update cpu
+  $gmx -bonded gpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 01 -nb gpu -noconfout -npme 1 -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 2 -ntomp 2 -pin on -pinoffset 0 -pinstride 1 -pme gpu -resetstep ${resetstep} -s ${tpr} -update cpu
   wait
   cd ${groupdir}
 done
@@ -87,7 +87,7 @@ for i in $(seq 1 ${ntrials}); do
   trialdir=${groupdir}/trial_${i}
   mkdir $trialdir
   cd $trialdir
-  $gmx -bonded cpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 01 -nb gpu -noconfout -npme 1 -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 2 -ntomp 2 -pin on -pinoffset 0 -pinstride 1 -pme gpu -resetstep ${resetstep} -s ${tpr} -update gpu
+  $gmx -bonded gpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 01 -nb gpu -noconfout -npme 1 -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 2 -ntomp 2 -pin on -pinoffset 0 -pinstride 1 -pme gpu -resetstep ${resetstep} -s ${tpr} -update gpu
   wait
   cd ${groupdir}
 done
@@ -101,7 +101,7 @@ for i in $(seq 1 ${ntrials}); do
   trialdir=${groupdir}/trial_${i}
   mkdir $trialdir
   cd $trialdir
-  $gmx -bonded gpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 01 -nb gpu -noconfout -npme 1 -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 2 -ntomp 2 -pin on -pinoffset 0 -pinstride 1 -pme gpu -resetstep ${resetstep} -s ${tpr} -update cpu
+  $gmx -bonded cpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 0011 -nb gpu -noconfout -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 4 -ntomp 1 -pin on -pinoffset 0 -pinstride 1 -pme cpu -resetstep ${resetstep} -s ${tpr} -update cpu
   wait
   cd ${groupdir}
 done
@@ -115,7 +115,7 @@ for i in $(seq 1 ${ntrials}); do
   trialdir=${groupdir}/trial_${i}
   mkdir $trialdir
   cd $trialdir
-  $gmx -bonded gpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 01 -nb gpu -noconfout -npme 1 -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 2 -ntomp 2 -pin on -pinoffset 0 -pinstride 1 -pme gpu -resetstep ${resetstep} -s ${tpr} -update gpu
+  $gmx -bonded gpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 0011 -nb gpu -noconfout -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 4 -ntomp 1 -pin on -pinoffset 0 -pinstride 1 -pme cpu -resetstep ${resetstep} -s ${tpr} -update cpu
   wait
   cd ${groupdir}
 done
@@ -129,7 +129,7 @@ for i in $(seq 1 ${ntrials}); do
   trialdir=${groupdir}/trial_${i}
   mkdir $trialdir
   cd $trialdir
-  $gmx -bonded cpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 0011 -nb gpu -noconfout -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 4 -ntomp 1 -pin on -pinoffset 0 -pinstride 1 -pme cpu -resetstep ${resetstep} -s ${tpr} -update cpu
+  $gmx -bonded cpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 0011 -nb gpu -noconfout -npme 1 -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 4 -ntomp 1 -pin on -pinoffset 0 -pinstride 1 -pme gpu -resetstep ${resetstep} -s ${tpr} -update cpu
   wait
   cd ${groupdir}
 done
@@ -143,7 +143,7 @@ for i in $(seq 1 ${ntrials}); do
   trialdir=${groupdir}/trial_${i}
   mkdir $trialdir
   cd $trialdir
-  $gmx -bonded cpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 0011 -nb gpu -noconfout -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 4 -ntomp 1 -pin on -pinoffset 0 -pinstride 1 -pme cpu -resetstep ${resetstep} -s ${tpr} -update gpu
+  $gmx -bonded cpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 0011 -nb gpu -noconfout -npme 1 -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 4 -ntomp 1 -pin on -pinoffset 0 -pinstride 1 -pme gpu -resetstep ${resetstep} -s ${tpr} -update gpu
   wait
   cd ${groupdir}
 done
@@ -157,7 +157,7 @@ for i in $(seq 1 ${ntrials}); do
   trialdir=${groupdir}/trial_${i}
   mkdir $trialdir
   cd $trialdir
-  $gmx -bonded gpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 0011 -nb gpu -noconfout -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 4 -ntomp 1 -pin on -pinoffset 0 -pinstride 1 -pme cpu -resetstep ${resetstep} -s ${tpr} -update cpu
+  $gmx -bonded gpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 0011 -nb gpu -noconfout -npme 1 -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 4 -ntomp 1 -pin on -pinoffset 0 -pinstride 1 -pme gpu -resetstep ${resetstep} -s ${tpr} -update cpu
   wait
   cd ${groupdir}
 done
@@ -171,69 +171,13 @@ for i in $(seq 1 ${ntrials}); do
   trialdir=${groupdir}/trial_${i}
   mkdir $trialdir
   cd $trialdir
-  $gmx -bonded gpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 0011 -nb gpu -noconfout -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 4 -ntomp 1 -pin on -pinoffset 0 -pinstride 1 -pme cpu -resetstep ${resetstep} -s ${tpr} -update gpu
-  wait
-  cd ${groupdir}
-done
-
-
-group=13
-groupdir=$workdir/group_${group}
-mkdir $groupdir
-cd $groupdir
-for i in $(seq 1 ${ntrials}); do
-  trialdir=${groupdir}/trial_${i}
-  mkdir $trialdir
-  cd $trialdir
-  $gmx -bonded cpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 0011 -nb gpu -noconfout -npme 1 -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 4 -ntomp 1 -pin on -pinoffset 0 -pinstride 1 -pme gpu -resetstep ${resetstep} -s ${tpr} -update cpu
-  wait
-  cd ${groupdir}
-done
-
-
-group=14
-groupdir=$workdir/group_${group}
-mkdir $groupdir
-cd $groupdir
-for i in $(seq 1 ${ntrials}); do
-  trialdir=${groupdir}/trial_${i}
-  mkdir $trialdir
-  cd $trialdir
-  $gmx -bonded cpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 0011 -nb gpu -noconfout -npme 1 -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 4 -ntomp 1 -pin on -pinoffset 0 -pinstride 1 -pme gpu -resetstep ${resetstep} -s ${tpr} -update gpu
-  wait
-  cd ${groupdir}
-done
-
-
-group=15
-groupdir=$workdir/group_${group}
-mkdir $groupdir
-cd $groupdir
-for i in $(seq 1 ${ntrials}); do
-  trialdir=${groupdir}/trial_${i}
-  mkdir $trialdir
-  cd $trialdir
-  $gmx -bonded gpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 0011 -nb gpu -noconfout -npme 1 -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 4 -ntomp 1 -pin on -pinoffset 0 -pinstride 1 -pme gpu -resetstep ${resetstep} -s ${tpr} -update cpu
-  wait
-  cd ${groupdir}
-done
-
-
-group=16
-groupdir=$workdir/group_${group}
-mkdir $groupdir
-cd $groupdir
-for i in $(seq 1 ${ntrials}); do
-  trialdir=${groupdir}/trial_${i}
-  mkdir $trialdir
-  cd $trialdir
   $gmx -bonded gpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 0011 -nb gpu -noconfout -npme 1 -nsteps ${nsteps} -nstlist 80 -nt 4 -ntmpi 4 -ntomp 1 -pin on -pinoffset 0 -pinstride 1 -pme gpu -resetstep ${resetstep} -s ${tpr} -update gpu
   wait
   cd ${groupdir}
 done
 
 
-group=17
+group=13
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -250,7 +194,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=18
+group=14
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -267,7 +211,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=19
+group=15
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -284,7 +228,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=20
+group=16
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -301,7 +245,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=21
+group=17
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -318,7 +262,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=22
+group=18
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -335,7 +279,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=23
+group=19
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -352,7 +296,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=24
+group=20
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -369,7 +313,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=25
+group=21
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -384,7 +328,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=26
+group=22
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -399,7 +343,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=27
+group=23
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -414,7 +358,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=28
+group=24
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -429,7 +373,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=29
+group=25
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -444,7 +388,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=30
+group=26
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -459,7 +403,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=31
+group=27
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -474,7 +418,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=32
+group=28
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -489,7 +433,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=33
+group=29
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -504,22 +448,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=34
-groupdir=$workdir/group_${group}
-mkdir $groupdir
-cd $groupdir
-for i in $(seq 1 ${ntrials}); do
-  trialdir=${groupdir}/trial_${i}
-  mkdir $trialdir
-  cd $trialdir
-  $gmx -bonded cpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 00 -nb gpu -noconfout -nsteps ${nsteps} -nstlist 80 -nt 2 -ntmpi 2 -ntomp 1 -pin on -pinoffset 0 -pinstride 1 -pme cpu -resetstep ${resetstep} -s ${tpr} -update gpu &
-  $gmx -bonded cpu -deffnm group_${group}_trial_${i}_component_2 -gputasks 11 -nb gpu -noconfout -nsteps ${nsteps} -nstlist 80 -nt 2 -ntmpi 2 -ntomp 1 -pin on -pinoffset 2 -pinstride 1 -pme cpu -resetstep ${resetstep} -s ${tpr} -update gpu
-  wait
-  cd ${groupdir}
-done
-
-
-group=35
+group=30
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -534,22 +463,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=36
-groupdir=$workdir/group_${group}
-mkdir $groupdir
-cd $groupdir
-for i in $(seq 1 ${ntrials}); do
-  trialdir=${groupdir}/trial_${i}
-  mkdir $trialdir
-  cd $trialdir
-  $gmx -bonded gpu -deffnm group_${group}_trial_${i}_component_1 -gputasks 00 -nb gpu -noconfout -nsteps ${nsteps} -nstlist 80 -nt 2 -ntmpi 2 -ntomp 1 -pin on -pinoffset 0 -pinstride 1 -pme cpu -resetstep ${resetstep} -s ${tpr} -update gpu &
-  $gmx -bonded gpu -deffnm group_${group}_trial_${i}_component_2 -gputasks 11 -nb gpu -noconfout -nsteps ${nsteps} -nstlist 80 -nt 2 -ntmpi 2 -ntomp 1 -pin on -pinoffset 2 -pinstride 1 -pme cpu -resetstep ${resetstep} -s ${tpr} -update gpu
-  wait
-  cd ${groupdir}
-done
-
-
-group=37
+group=31
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -564,7 +478,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=38
+group=32
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -579,7 +493,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=39
+group=33
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir
@@ -594,7 +508,7 @@ for i in $(seq 1 ${ntrials}); do
 done
 
 
-group=40
+group=34
 groupdir=$workdir/group_${group}
 mkdir $groupdir
 cd $groupdir

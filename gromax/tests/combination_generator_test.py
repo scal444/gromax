@@ -613,26 +613,6 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
             # bonded = cpu cases
             {
                 **self.expected_base,
-                "ntmpi": 4,
-                "ntomp": 1,
-                "nb": "gpu",
-                "pme": "cpu",
-                "bonded": "cpu",
-                "update": "gpu",
-                "gputasks": "0000"
-            },
-            {
-                **self.expected_base,
-                "ntmpi": 2,
-                "ntomp": 2,
-                "nb": "gpu",
-                "bonded": "cpu",
-                "pme": "cpu",
-                "update": "gpu",
-                "gputasks": "00"
-            },
-            {
-                **self.expected_base,
                 "ntmpi": 1,
                 "ntomp": 4,
                 "nb": "gpu",
@@ -677,26 +657,6 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
             },
 
             # Bonded = gpu cases
-            {
-                **self.expected_base,
-                "ntmpi": 4,
-                "ntomp": 1,
-                "nb": "gpu",
-                "bonded": "gpu",
-                "pme": "cpu",
-                "update": "gpu",
-                "gputasks": "0000"
-            },
-            {
-                **self.expected_base,
-                "ntmpi": 2,
-                "ntomp": 2,
-                "nb": "gpu",
-                "bonded": "gpu",
-                "pme": "cpu",
-                "update": "gpu",
-                "gputasks": "00"
-            },
             {
                 **self.expected_base,
                 "ntmpi": 1,
@@ -968,26 +928,6 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "gputasks": "01"
             },
             # update = gpu options
-            {
-                **self.expected_base,
-                "ntmpi": 4,
-                "ntomp": 1,
-                "nb": "gpu",
-                "bonded": "cpu",
-                "pme": "cpu",
-                "update": "gpu",
-                "gputasks": "0011"
-            },
-            {
-                **self.expected_base,
-                "ntmpi": 2,
-                "ntomp": 2,
-                "nb": "gpu",
-                "bonded": "cpu",
-                "pme": "cpu",
-                "update": "gpu",
-                "gputasks": "01"
-            },
             # PME = gpu cases need npme=1
             {
                 **self.expected_base,
@@ -1012,26 +952,6 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
                 "gputasks": "01"
             },
             # bonded = gpu
-            {
-                **self.expected_base,
-                "ntmpi": 4,
-                "ntomp": 1,
-                "nb": "gpu",
-                "bonded": "gpu",
-                "pme": "cpu",
-                "update": "gpu",
-                "gputasks": "0011"
-            },
-            {
-                **self.expected_base,
-                "ntmpi": 2,
-                "ntomp": 2,
-                "nb": "gpu",
-                "bonded": "gpu",
-                "pme": "cpu",
-                "update": "gpu",
-                "gputasks": "01"
-            },
             # PME = gpu cases need npme=1
             {
                 **self.expected_base,
