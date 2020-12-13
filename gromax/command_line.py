@@ -59,7 +59,7 @@ def _buildParser() -> argparse.ArgumentParser:
     ))
     generate_group.add_argument("--trials_per_group", type=int, default=3, metavar="",
                                 help="Number of times to run each parameter set.")
-    generate_group.add_argument("--tpr", type=str, help="Path to the tpr file to benchmark.", metavar="")
+    generate_group.add_argument("--tpr", type=str, help="Absolute path to the tpr file to benchmark.", metavar="")
     generate_group.add_argument("--cpu_ids", type=str, help="CPUs to be run on.", metavar="", default="")
     generate_group.add_argument("--gpu_ids", type=str, help="GPUs to be run on.", metavar="", default="")
     generate_group.add_argument("--num_cpus", type=int, metavar="",
