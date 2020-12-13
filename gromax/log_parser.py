@@ -162,7 +162,7 @@ def _handleFailure(op: regexOp):
     if op in (_commandInputRegexOp, _fullCommandRegexOp):
         raise ParseGmxCommandError()
     if op == _performanceRegexOp:
-        raise ParsePerformanceError()
+        raise ParsePerformanceError("Unable to find performance readout in log")
 
 
 class LogParser(object):
