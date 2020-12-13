@@ -14,6 +14,11 @@ yet another layer of complexity. Gromax is here to help.
 
 ## Installation
 ### Via pip
+To install the most recent release:
+```
+pip install git+https://github.com/scal444/gromax@v0.1.0
+```
+
 To install the current master version:
 
 ```
