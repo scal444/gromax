@@ -12,7 +12,6 @@ setup(
     url="https://github.com/scal444/gromax",
     license="GPLv3",
     classifiers=[
-        'Development Status :: 3 - Alpha',
         'Environment :: Console',
         'Operating System  :: OS Independent',
         'Programming Language :: Python :: 3',

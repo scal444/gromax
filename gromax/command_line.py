@@ -72,7 +72,8 @@ def _buildParser() -> argparse.ArgumentParser:
                                 help="If set, do not divide the hardware among multiple concurrent simulations")
     analyze_group = parser.add_argument_group("analyze", "arguments for 'gromax analyze'")
     analyze_group.add_argument("--directory", type=str, help="Path to execution/analysis directory.", metavar="")
-    parser.add_argument("--version", action="version", version="alpha")
+    # TODO - global version variable
+    parser.add_argument("--version", action="version", version="0.1.0")
     parser.add_argument("--log_level", type=str, default="info", metavar="",
                         help="Set logging verbosity - 'silent', 'info'(default), or 'debug'")
     return parser
