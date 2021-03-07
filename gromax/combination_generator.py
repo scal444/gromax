@@ -5,7 +5,7 @@ from copy import deepcopy
 from typing import List, Dict, Set, Any, Callable
 
 # Constants
-_SUPPORTED_VERSIONS: Set[str] = {"2016", "2018", "2019", "2020"}
+_SUPPORTED_VERSIONS: Set[str] = {"2016", "2018", "2019", "2020", "2021"}
 
 # TODO: consolidate constants like this and potentially make configurable
 _MAX_RANKS_PME_GPU = 8
