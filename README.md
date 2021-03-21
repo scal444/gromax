@@ -26,7 +26,7 @@ pip install git+https://github.com/scal444/gromax
 ```
 
 ### Requirements
-- python 3.6 or greater
+- python 3.7 or greater
 
 ## Capabilities
 - Given a Gromacs TPR file and a description of the hardware (CPU count and GPU IDs), generate a series of Gromacs run
