@@ -67,7 +67,6 @@ class GenerateSuccessTests(unittest.TestCase):
             Executes the program, checks for correct execution, compares output file to reference.
         """
         self._combineArgs()
-        print("args: " + " ".join(self.args))
         self.assertEqual(self._run_and_get_rc(), 0)
         with open(self.kvs["--run_file"], 'r') as test_output_file:
             test_output: str = test_output_file.read()
@@ -84,6 +83,7 @@ class GenerateSuccessTests(unittest.TestCase):
             "--gpu_ids": "0,1",
             "--gmx_version": "2016",
             "--run_file": tempfile.mkstemp()[1],
+            "--generate_exhaustive_combinations": None,
         }
         self.args = ["gromax", "generate"]
 
@@ -142,3 +142,22 @@ class GenerateSuccessTests(unittest.TestCase):
     def testSingleSimOnly(self):
         self.kvs["--single_sim_only"] = None
         self._runAndCompareOutput("generate_test_single_sim_only.sh")
+
+    def testNonExhaustive(self):
+        self.kvs = {
+            "--cpu_ids": "0-3",
+            "--gpu_ids": "0",
+            "--gmx_version": "2020",
+            "--run_file": tempfile.mkstemp()[1],
+        }
+        self._runAndCompareOutput("generate_test_minimal_subset.sh")
+
+    def testNonExhaustiveWillSingleSim(self):
+        self.kvs = {
+            "--cpu_ids": "0-3",
+            "--gpu_ids": "0",
+            "--gmx_version": "2020",
+            "--run_file": tempfile.mkstemp()[1],
+            "--single_sim_only": None,
+        }
+        self._runAndCompareOutput("generate_test_minimal_subset_single_sim.sh")

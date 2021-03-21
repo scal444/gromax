@@ -146,9 +146,11 @@ class CreateRunOptionsForSingleConfigTestv2016(unittest.TestCase):
 
     def setUp(self):
         self.config = HardwareConfig(cpu_ids=[0, 1, 2, 3])
+        self._default_options: cg.GenerateOptions = cg.GenerateOptions(generate_exhaustive_options=True,
+                                                                       max_sims_per_gpu=4)
 
     def testNoGpu(self):
-        result = cg.createRunOptionsForSingleConfig(self.config, self.version)
+        result = cg.createRunOptionsForSingleConfig(self.config, self.version, self._default_options)
         expected = [
             {
                 **self.expected_base,
@@ -162,7 +164,7 @@ class CreateRunOptionsForSingleConfigTestv2016(unittest.TestCase):
     def testSingleGPU(self):
         self.maxDiff = None
         self.config.gpu_ids = [0]
-        result = cg.createRunOptionsForSingleConfig(self.config, self.version)
+        result = cg.createRunOptionsForSingleConfig(self.config, self.version, self._default_options)
         expected = [
             {
                 **self.expected_base,
@@ -190,7 +192,7 @@ class CreateRunOptionsForSingleConfigTestv2016(unittest.TestCase):
 
     def testMultiGPU(self):
         self.config.gpu_ids = [0, 1]
-        result = cg.createRunOptionsForSingleConfig(self.config, self.version)
+        result = cg.createRunOptionsForSingleConfig(self.config, self.version, self._default_options)
         expected = [
             {
                 **self.expected_base,
@@ -221,9 +223,11 @@ class CreateRunOptionsForSingleConfigTestv2018(unittest.TestCase):
 
     def setUp(self):
         self.config = HardwareConfig(cpu_ids=[0, 1, 2, 3])
+        self._default_options: cg.GenerateOptions = cg.GenerateOptions(generate_exhaustive_options=True,
+                                                                       max_sims_per_gpu=4)
 
     def testNoGpu(self):
-        result = cg.createRunOptionsForSingleConfig(self.config, self.version)
+        result = cg.createRunOptionsForSingleConfig(self.config, self.version, self._default_options)
         expected = [
             {
                 **self.expected_base,
@@ -237,7 +241,7 @@ class CreateRunOptionsForSingleConfigTestv2018(unittest.TestCase):
     def testSingleGPU(self):
         self.maxDiff = None
         self.config.gpu_ids = [0]
-        result = cg.createRunOptionsForSingleConfig(self.config, self.version)
+        result = cg.createRunOptionsForSingleConfig(self.config, self.version, self._default_options)
         expected = [
             {
                 **self.expected_base,
@@ -296,7 +300,7 @@ class CreateRunOptionsForSingleConfigTestv2018(unittest.TestCase):
 
     def testMultiGPU(self):
         self.config.gpu_ids = [0, 1]
-        result = cg.createRunOptionsForSingleConfig(self.config, self.version)
+        result = cg.createRunOptionsForSingleConfig(self.config, self.version, self._default_options)
         expected = [
             {
                 **self.expected_base,
@@ -349,9 +353,11 @@ class CreateRunOptionsForSingleConfigTestv2019(unittest.TestCase):
 
     def setUp(self):
         self.config = HardwareConfig(cpu_ids=[0, 1, 2, 3])
+        self._default_options: cg.GenerateOptions = cg.GenerateOptions(generate_exhaustive_options=True,
+                                                                       max_sims_per_gpu=4)
 
     def testNoGpu(self):
-        result = cg.createRunOptionsForSingleConfig(self.config, self.version)
+        result = cg.createRunOptionsForSingleConfig(self.config, self.version, self._default_options)
         expected = [
             {
                 **self.expected_base,
@@ -365,7 +371,7 @@ class CreateRunOptionsForSingleConfigTestv2019(unittest.TestCase):
     def testSingleGPU(self):
         self.maxDiff = None
         self.config.gpu_ids = [0]
-        result = cg.createRunOptionsForSingleConfig(self.config, self.version)
+        result = cg.createRunOptionsForSingleConfig(self.config, self.version, self._default_options)
         expected = [
             # bonded = cpu cases
             {
@@ -491,7 +497,7 @@ class CreateRunOptionsForSingleConfigTestv2019(unittest.TestCase):
 
     def testMultiGPU(self):
         self.config.gpu_ids = [0, 1]
-        result = cg.createRunOptionsForSingleConfig(self.config, self.version)
+        result = cg.createRunOptionsForSingleConfig(self.config, self.version, self._default_options)
         expected = [
             # bonded = cpu
             {
@@ -592,9 +598,11 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
 
     def setUp(self):
         self.config = HardwareConfig(cpu_ids=[0, 1, 2, 3])
+        self._default_options: cg.GenerateOptions = cg.GenerateOptions(generate_exhaustive_options=True,
+                                                                       max_sims_per_gpu=4)
 
     def testNoGpu(self):
-        result = cg.createRunOptionsForSingleConfig(self.config, self.version)
+        result = cg.createRunOptionsForSingleConfig(self.config, self.version, self._default_options)
         expected = [
             {
                 **self.expected_base,
@@ -608,7 +616,7 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
     def testSingleGPU(self):
         self.maxDiff = None
         self.config.gpu_ids = [0]
-        result = cg.createRunOptionsForSingleConfig(self.config, self.version)
+        result = cg.createRunOptionsForSingleConfig(self.config, self.version, self._default_options)
         expected = [
             # bonded = cpu cases
             {
@@ -837,7 +845,7 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
 
     def testMultiGPU(self):
         self.config.gpu_ids = [0, 1]
-        result = cg.createRunOptionsForSingleConfig(self.config, self.version)
+        result = cg.createRunOptionsForSingleConfig(self.config, self.version, self._default_options)
         expected = [
             # bonded = cpu
             {
@@ -978,6 +986,80 @@ class CreateRunOptionsForSingleConfigTestv2020(unittest.TestCase):
         ]
         self.assertCountEqual(result, expected)
 
+    def testMinimalSubset(self):
+        self.maxDiff = None
+        self.config.gpu_ids = [0]
+        options = cg.GenerateOptions(max_sims_per_gpu=2, generate_exhaustive_options=False)
+        result = cg.createRunOptionsForSingleConfig(self.config, self.version, options)
+        expected = [
+            # PME = gpu cases need npme=1
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "gpu",
+                "npme": 1,
+                "update": "gpu",
+                "gputasks": "0000"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "gpu",
+                "npme": 1,
+                "update": "gpu",
+                "gputasks": "00"
+            },
+            # Note the double gputask even though there's only one rank
+            {
+                **self.expected_base,
+                "ntmpi": 1,
+                "ntomp": 4,
+                "nb": "gpu",
+                "bonded": "gpu",
+                "pme": "gpu",
+                "update": "gpu",
+                "gputasks": "00"
+            },
+            # update = cpu cases
+            {
+                **self.expected_base,
+                "ntmpi": 4,
+                "ntomp": 1,
+                "nb": "gpu",
+                "pme": "cpu",
+                "bonded": "cpu",
+                "update": "cpu",
+                "gputasks": "0000"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 2,
+                "ntomp": 2,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "cpu",
+                "update": "cpu",
+                "gputasks": "00"
+            },
+            {
+                **self.expected_base,
+                "ntmpi": 1,
+                "ntomp": 4,
+                "nb": "gpu",
+                "bonded": "cpu",
+                "pme": "cpu",
+                "update": "cpu",
+                "gputasks": "0"
+            },
+        ]
+        self.assertCountEqual(result, expected)
+
 
 class CreateRunOptionsForConfigGroupTest(unittest.TestCase):
     common = {
@@ -991,16 +1073,20 @@ class CreateRunOptionsForConfigGroupTest(unittest.TestCase):
 
     }
 
+    def setUp(self) -> None:
+        self._default_options: cg.GenerateOptions = cg.GenerateOptions(generate_exhaustive_options=True,
+                                                                       max_sims_per_gpu=4)
+
     def testEmptyBreakdown(self):
-        self.assertEqual(cg.createRunOptionsForConfigGroup([], "2020"), [])
+        self.assertEqual(cg.createRunOptionsForConfigGroup([], "2020", self._default_options), [])
 
     def testFailsInvalidVersion(self):
         with self.assertRaises(ValueError):
-            cg.createRunOptionsForConfigGroup([HardwareConfig(cpu_ids=[0])], "2015")
+            cg.createRunOptionsForConfigGroup([HardwareConfig(cpu_ids=[0])], "2015", self._default_options)
 
     def testSinglebreakdown(self):
         configs = [HardwareConfig(cpu_ids=[0, 1, 2, 3], gpu_ids=[0])]
-        result = cg.createRunOptionsForConfigGroup(configs, "2016")
+        result = cg.createRunOptionsForConfigGroup(configs, "2016", self._default_options)
         expected = [
             [
                 {
@@ -1037,7 +1123,7 @@ class CreateRunOptionsForConfigGroupTest(unittest.TestCase):
 
     def testMultiBreakdown(self):
         configs = [HardwareConfig(cpu_ids=[0, 1], gpu_ids=[0]), HardwareConfig(cpu_ids=[2, 3], gpu_ids=[1])]
-        result = cg.createRunOptionsForConfigGroup(configs, "2016")
+        result = cg.createRunOptionsForConfigGroup(configs, "2016", self._default_options)
         expected = [
             [
                 {

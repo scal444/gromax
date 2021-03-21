@@ -1,7 +1,7 @@
 import argparse
 from typing import List, Iterable
 
-from gromax.constants import _SUPPORTED_GMX_VERSIONS
+from gromax.constants import _SUPPORTED_GMX_VERSIONS, _GROMAX_VERSION
 from gromax.utils import fatalError
 
 # File constants.
@@ -59,6 +59,10 @@ def _buildParser() -> argparse.ArgumentParser:
     generate_group.add_argument("--gmx_executable", type=str, default="gmx", metavar="", help=(
         "gmx or gmx_mpi executable path. Defaults to 'gmx', which works if the executable is in your path."
     ))
+    generate_group.add_argument("--generate_exhaustive_combinations", default=False, action="store_true",
+                                help=("If set, Gromax will generate all possible combinations of PME/bonded/update "
+                                      "CPU/GPU options. If not set(by default), only options likely to have maximum "
+                                      "performance are generated."))
     generate_group.add_argument("--trials_per_group", type=int, default=3, metavar="",
                                 help="Number of times to run each parameter set.")
     generate_group.add_argument("--tpr", type=str, help="Absolute path to the tpr file to benchmark.", metavar="")
@@ -74,7 +78,7 @@ def _buildParser() -> argparse.ArgumentParser:
                                 help="If set, do not divide the hardware among multiple concurrent simulations")
     analyze_group = parser.add_argument_group("analyze", "arguments for 'gromax analyze'")
     analyze_group.add_argument("--directory", type=str, help="Path to execution/analysis directory.", metavar="")
-    parser.add_argument("--version", action="version", version="alpha")
+    parser.add_argument("--version", action="version", version=_GROMAX_VERSION)
     parser.add_argument("--log_level", type=str, default="info", metavar="",
                         help="Set logging verbosity - 'silent', 'info'(default), or 'debug'")
     return parser

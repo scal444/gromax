@@ -16,7 +16,7 @@ yet another layer of complexity. Gromax is here to help.
 ### Via pip
 To install the most recent release:
 ```
-pip install git+https://github.com/scal444/gromax@v0.1.0
+pip install git+https://github.com/scal444/gromax@v0.2.0
 ```
 
 To install the current master version:
@@ -53,6 +53,9 @@ in [the examples doc](docs/examples.md)!
 ## Contributing
 - Feel free to file an issue bug/feature request, or create a PR. There is a 
   [known issues doc](docs/known_issues.md) for problems that are known but can't yet be addressed. 
+
+## Release notes
+- Release notes can be found in [docs/releaes_notes](docs/release_notes)
 
 ## Other awesome resources
 - Want to see how well your system scales to various clusters? Check out
