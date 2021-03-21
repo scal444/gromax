@@ -1,6 +1,6 @@
 from setuptools import setup
 
-VERSION = "NEXT"
+VERSION = "0.2.0"
 
 setup(
     name="gromax",

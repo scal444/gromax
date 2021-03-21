@@ -31,7 +31,7 @@ pip install git+https://github.com/scal444/gromax
 ## Capabilities
 - Given a Gromacs TPR file and a description of the hardware (CPU count and GPU IDs), generate a series of Gromacs run
   commands to explore which parameters provide the best performance for the hardware.
-- Supports Gromacs major versions 2016, 2018, 2019, and 2020.
+- Supports Gromacs major versions 2016, 2018, 2019, 2020, and 2021.
 - Break down the available hardware into subcomponents to assess maximum throughput on a single node.
 - Generates a simple bash script to execute
 - Analyzes results and reports best paramater combinations.
@@ -55,7 +55,7 @@ in [the examples doc](docs/examples.md)!
   [known issues doc](docs/known_issues.md) for problems that are known but can't yet be addressed. 
 
 ## Release notes
-- Release notes can be found in [docs/releaes_notes](docs/release_notes)
+- Release notes can be found in [docs/release_notes](docs/release_notes)
 
 ## Other awesome resources
 - Want to see how well your system scales to various clusters? Check out
