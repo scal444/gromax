@@ -1,14 +1,11 @@
 import math
 
+from dataclasses import dataclass
+
+from gromax.constants import _SUPPORTED_GMX_VERSIONS
 from gromax.hardware_config import HardwareConfig
 from copy import deepcopy
-from typing import List, Dict, Set, Any, Callable
-
-# Constants
-_SUPPORTED_VERSIONS: Set[str] = {"2016", "2018", "2019", "2020", "2021"}
-
-# TODO: consolidate constants like this and potentially make configurable
-_MAX_RANKS_PME_GPU = 8
+from typing import List, Dict, Any, Callable
 
 # Convenience definitions
 # A grouping of GPU ids.
@@ -21,7 +18,17 @@ ParameterSetGroup = List[ParameterSet]
 HardwareConfigBreakdown = List[HardwareConfig]
 
 
-def genNtmpiOptions(total_procs: int, num_gpus: int, max_sims_per_gpu: int = 4) -> List[int]:
+@dataclass
+class GenerateOptions:
+    """
+        Consolidated options for parameter combination generation.
+    """
+    max_sims_per_gpu: int = 4
+    max_ranks_for_pme_gpu: int = 8
+    generate_exhaustive_options: bool = True
+
+
+def genNtmpiOptions(total_procs: int, num_gpus: int, max_ranks_per_gpu: int = 4) -> List[int]:
     """
         Breaks down the possible combinations of ntmpi for the given number of GPUs. For example, with
         2 GPUs and 6 CPUs, the combinations are:
@@ -30,8 +37,6 @@ def genNtmpiOptions(total_procs: int, num_gpus: int, max_sims_per_gpu: int = 4) 
 
             Note that in this example ntmpi=3 does not work, because you can't eveny split 2 GPUs among
             3 ranks.
-
-        Will not assign more than max_sims_per_gpu simulations to a single GPU
 
         If passed with no GPUs, returns a size one list with the number of processors, as non-GPU simulations
         should maximize thread counts.
@@ -42,7 +47,7 @@ def genNtmpiOptions(total_procs: int, num_gpus: int, max_sims_per_gpu: int = 4) 
         return [total_procs]
     curroption: int = num_gpus
     options: List[int] = []
-    while curroption <= total_procs and math.ceil(curroption / num_gpus) <= max_sims_per_gpu:
+    while curroption <= total_procs and math.ceil(curroption / num_gpus) <= max_ranks_per_gpu:
         if total_procs % curroption == 0 and curroption % num_gpus == 0:
             options.append(curroption)
         curroption += 1
@@ -135,7 +140,25 @@ def pruneOptionIf(parameters: List[ParameterSet], predicate: Callable[[Parameter
     return [option for option in parameters if not predicate(option)]
 
 
-def _createVersionedOptions(base_opts: ParameterSet, hw_config: HardwareConfig, gmx_version: str) -> ParameterSetGroup:
+def _pruneUnlikelyCombinations(parameters: List[ParameterSet]) -> List[ParameterSet]:
+    """
+        Removes combinations where PME != bonded != update - such as:
+
+        * PME GPU with bonded or update CPU
+        * PME CPU with bonded or update GPU
+    """
+    def removalPredicate(params: ParameterSet) -> bool:
+        pme = params["pme"]
+        # For earlier versions without these options (eg. 2016),
+        # set the other options to PME so the inequality isn't triggered.
+        update = params.get("update", pme)
+        bonded = params.get("bonded", pme)
+        return pme != update or pme != bonded
+    return pruneOptionIf(parameters, removalPredicate)
+
+
+def _createVersionedOptions(base_opts: ParameterSet, hw_config: HardwareConfig, gmx_version: str,
+                            generate_options: GenerateOptions) -> ParameterSetGroup:
     """
         Given a partial base parameter set, a hardware config, and a target Gromacs version, creates all of the
         parameter combination possibilities.
@@ -161,12 +184,11 @@ def _createVersionedOptions(base_opts: ParameterSet, hw_config: HardwareConfig, 
 
         # Cap max ranks for PME GPU
         def excessRanksPredicate(params: ParameterSet) -> bool:
-            return params["pme"] == "gpu" and params["ntmpi"] > _MAX_RANKS_PME_GPU
+            return params["pme"] == "gpu" and params["ntmpi"] > generate_options.max_ranks_for_pme_gpu
         options = pruneOptionIf(options, excessRanksPredicate)
 
         # set npme if more than one rank.
         def nPmePredicate(params: ParameterSet) -> bool:
-            # TODO verify that this is correct on all versions
             return params["pme"] == "gpu" and params["ntmpi"] > 1
         options = applyOptionIf(options, "npme", 1, nPmePredicate)
     if gmx_version >= "2019":
@@ -180,6 +202,8 @@ def _createVersionedOptions(base_opts: ParameterSet, hw_config: HardwareConfig, 
         def multiRankPredicate(params: ParameterSet):
             return params["pme"] == "cpu" and params["update"] == "gpu" and params["ntmpi"] > 1
         options = pruneOptionIf(options, multiRankPredicate)
+    if not generate_options.generate_exhaustive_options:
+        options = _pruneUnlikelyCombinations(options)
     # Add gputasks
     for opt in options:
         if opt.get("nb") == "gpu":
@@ -189,11 +213,11 @@ def _createVersionedOptions(base_opts: ParameterSet, hw_config: HardwareConfig, 
 
 
 def _versionIsValid(version: str):
-    # TODO move this more central when sanitizing user input
-    return version in _SUPPORTED_VERSIONS
+    return version in _SUPPORTED_GMX_VERSIONS
 
 
-def createRunOptionsForSingleConfig(hw_config: HardwareConfig, gmx_version: str) -> ParameterSetGroup:
+def createRunOptionsForSingleConfig(hw_config: HardwareConfig, gmx_version: str,
+                                    generate_options: GenerateOptions) -> ParameterSetGroup:
     """
         Generate the set of possible run options for a specific hardware config.
 
@@ -201,12 +225,13 @@ def createRunOptionsForSingleConfig(hw_config: HardwareConfig, gmx_version: str)
         (though the ordering can be arbitrary).
 
     """
-    options: ParameterSet = _createBaseOptions()
-    addConfigDependentOptions(options, hw_config)
-    return _createVersionedOptions(options, hw_config, gmx_version)
+    base_options: ParameterSet = _createBaseOptions()
+    addConfigDependentOptions(base_options, hw_config)
+    return _createVersionedOptions(base_options, hw_config, gmx_version, generate_options)
 
 
-def createRunOptionsForConfigGroup(configs: HardwareConfigBreakdown, gmx_version: str) -> List[ParameterSetGroup]:
+def createRunOptionsForConfigGroup(configs: HardwareConfigBreakdown, gmx_version: str,
+                                   generate_options: GenerateOptions) -> List[ParameterSetGroup]:
     """
         Generate all the parameter combinations for a given subconfiguration of the hardware.
 
@@ -221,11 +246,12 @@ def createRunOptionsForConfigGroup(configs: HardwareConfigBreakdown, gmx_version
 
     if not _versionIsValid(gmx_version):
         raise ValueError("Invalid Gromacs version: {}. Supported options are {}".format(gmx_version,
-                                                                                        _SUPPORTED_VERSIONS))
+                                                                                        _SUPPORTED_GMX_VERSIONS))
 
     # This gets us all the combinations we want, but with the wrong structure. The top level is for each partial
     # hardware config, and the second level is over the options within each subconfig.
-    breakdowns_per_config: List[ParameterSetGroup] = [createRunOptionsForSingleConfig(config, gmx_version)
+    breakdowns_per_config: List[ParameterSetGroup] = [createRunOptionsForSingleConfig(config, gmx_version,
+                                                                                      generate_options)
                                                       for config in configs]
     # Now we reorder, inverting the organization such that
     #   [[subconfig1_option1, subconfig1_option2], [subconfig2_option1, subconfig2_option2]]

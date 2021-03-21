@@ -5,7 +5,7 @@ import os
 import sys
 from gromax.analysis import GromaxData, constructGromaxData, reportStatistics
 from gromax.file_io import parseDirectoryStructure, allDirectoryContent, SanitizeDirectoryStructure
-from gromax.combination_generator import createRunOptionsForConfigGroup
+from gromax.combination_generator import createRunOptionsForConfigGroup, GenerateOptions
 from gromax.command_line import checkArgs, parseArgs, parseIDString
 from gromax.hardware_config import HardwareConfig, generateConfigSplitOptions
 from gromax.output import ParamsToString, WriteRunScript
@@ -13,6 +13,12 @@ from typing import Callable, List, Dict
 """
     Command line entry point.
 """
+
+
+def _populateGenerateOptions(args: argparse.Namespace) -> GenerateOptions:
+    max_sims_per_gpu: int = 4 if args.generate_exhaustive_combinations else 2
+    return GenerateOptions(max_sims_per_gpu=max_sims_per_gpu,
+                           generate_exhaustive_options=args.generate_exhaustive_combinations)
 
 
 def _executeGenerateWorkflow(args: argparse.Namespace) -> None:
@@ -33,15 +39,17 @@ def _executeGenerateWorkflow(args: argparse.Namespace) -> None:
             num_cpus, num_gpus, num_cpus - modval))
         cpu_ids = cpu_ids[:-modval]
     hw_config: HardwareConfig = HardwareConfig(cpu_ids=cpu_ids, gpu_ids=gpu_ids)
-    # generate options
+
+    generate_options: GenerateOptions = _populateGenerateOptions(args)
     if args.single_sim_only:
         config_splits: List[List[HardwareConfig]] = [[hw_config]]
     else:
-        config_splits: List[List[HardwareConfig]] = generateConfigSplitOptions(hw_config)
+        config_splits: List[List[HardwareConfig]] = generateConfigSplitOptions(
+            hw_config, max_sims_per_gpu=generate_options.max_sims_per_gpu)
     logger.debug("Generated {} hardware config breakdowns".format(len(config_splits)))
     run_opts: List[List[Dict]] = []
     for config_split in config_splits:
-        run_opts.extend(createRunOptionsForConfigGroup(config_split, args.gmx_version))
+        run_opts.extend(createRunOptionsForConfigGroup(config_split, args.gmx_version, generate_options))
     # Serialize options.
     out_file: str = args.run_file
     # TODO Make this configurable and robust
@@ -70,7 +78,7 @@ def _executeAnalyzeWorkflow(args: argparse.Namespace) -> None:
     sys.stdout.write(reportStatistics(result_data.groupStatistics()))
 
 
-def _executeExecuteWorkflow(args: argparse.Namespace) -> None:
+def _executeExecuteWorkflow(_: argparse.Namespace) -> None:
     raise NotImplementedError("Direct execution not yet supported.")
 
 

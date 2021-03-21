@@ -56,12 +56,12 @@ class HardwareConfig(object):
         try:
             for item in gpu_ids:
                 if not isinstance(item, int):
-                    utils.fatal_error("All gpu ids must be integers: {} is not an int".format(item))
+                    utils.fatalError("All gpu ids must be integers: {} is not an int".format(item))
                 if item < 0:
-                    utils.fatal_error("Cannot have a negative GPU ID")
+                    utils.fatalError("Cannot have a negative GPU ID")
             self._gpu_ids = gpu_ids
         except TypeError:
-            utils.fatal_error("gpu_ids paramater must be iterable")
+            utils.fatalError("gpu_ids paramater must be iterable")
 
     def __str__(self) -> str:
         return "\nHardware config:\n\tcpu IDs : {}\n\tgpu IDs : {}".format(self._cpu_ids, self._gpu_ids)
@@ -124,8 +124,6 @@ def generateConfigSplitOptions(hw_config: HardwareConfig, max_sims_per_gpu: int 
         configsplit1 should add up to the entire config.
 
         Will not create a breakdown such that more than max_sims_per_gpu simulations use the same GPU.
-	TODO: integration test for this
-
     """
     num_total_cpus: int = hw_config.num_cpus
     num_total_gpus: int = hw_config.num_gpus
@@ -167,10 +165,10 @@ def checkProcessorIDContent(cpu_ids: List[int]):
         Exits the program if a condition is not met.
     """
     if not isinstance(cpu_ids, list):
-        utils.fatal_error("Expected a list for parameter 'cpu_ids'")
+        utils.fatalError("Expected a list for parameter 'cpu_ids'")
 
     if not all([isinstance(i, int) and i >= 0 for i in cpu_ids]):
-        utils.fatal_error("Not all values in 'cpu_ids' are ints")
+        utils.fatalError("Not all values in 'cpu_ids' are ints")
 
     # case of empty list
     if not cpu_ids:
@@ -181,4 +179,4 @@ def checkProcessorIDContent(cpu_ids: List[int]):
 
         for i, val in enumerate(cpu_ids[:-1]):
             if (cpu_ids[i+1] - val) != diff:
-                utils.fatal_error("Inconsistent stride between cpu ids")
+                utils.fatalError("Inconsistent stride between cpu ids")

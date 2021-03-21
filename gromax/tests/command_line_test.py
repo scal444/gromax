@@ -1,5 +1,7 @@
 import unittest
+
 from gromax.command_line import checkArgs, parseArgs, parseIDString
+from gromax.constants import _SUPPORTED_GMX_VERSIONS
 
 
 class CommandLineInputTest(unittest.TestCase):
@@ -9,9 +11,7 @@ class CommandLineInputTest(unittest.TestCase):
             checkArgs(parseArgs(args))
 
     def testValidGromacsVersionsAccepted(self):
-        # TODO import this when centralized and loop over valid ones
-        valid_options = ["2016", "2018", "2019"]
-        for opt in valid_options:
+        for opt in _SUPPORTED_GMX_VERSIONS:
             checkArgs(parseArgs(
                 ["generate", "--gmx_version", opt, "--cpu_ids", 0, "--gpu_ids", 0, "--run_file",  "test.sh"]))
 

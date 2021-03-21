@@ -26,38 +26,38 @@ class ProcessorIDContentTests(unittest.TestCase):
         cpu_ids = [1, 4, 7]
         checkProcessorIDContent(cpu_ids)
 
-    @patch('gromax.utils.fatal_error')
+    @patch('gromax.utils.fatalError')
     def testFailIfNotList(self, mock_fatal_error):
         cpu_ids = 1
         with self.assertRaises(TypeError):
             checkProcessorIDContent(cpu_ids)
         self.assertTrue(mock_fatal_error.called)
 
-    @patch('gromax.utils.fatal_error')
+    @patch('gromax.utils.fatalError')
     def testFailIfContentsString(self, mock_fatal_error):
         cpu_ids = ["1"]
         checkProcessorIDContent(cpu_ids)
         self.assertTrue(mock_fatal_error.called)
 
-    @patch('gromax.utils.fatal_error')
+    @patch('gromax.utils.fatalError')
     def testFailIfContentsFloat(self, mock_fatal_error):
         cpu_ids = [1.5]
         checkProcessorIDContent(cpu_ids)
         self.assertTrue(mock_fatal_error.called)
 
-    @patch('gromax.utils.fatal_error')
+    @patch('gromax.utils.fatalError')
     def testFailIfAnElementIsNonInt(self, mock_fatal_error):
         cpu_ids = [1, 2, 3.5, 4, 5]
         checkProcessorIDContent(cpu_ids)
         self.assertTrue(mock_fatal_error.called)
 
-    @patch('gromax.utils.fatal_error')
+    @patch('gromax.utils.fatalError')
     def testFailIfNegativeIDs(self, mock_fatal_error):
         cpu_ids = [-1, 3]
         checkProcessorIDContent(cpu_ids)
         self.assertTrue(mock_fatal_error.called)
 
-    @patch('gromax.utils.fatal_error')
+    @patch('gromax.utils.fatalError')
     def testFailIfInconsistentStride(self, mock_fatal_error):
         cpu_ids = [1, 3, 5, 8]
         checkProcessorIDContent(cpu_ids)
@@ -90,19 +90,19 @@ class HardwareConfigBasicTests(unittest.TestCase):
         config = HardwareConfig(cpu_ids=[1, 2], gpu_ids=[5])
         self.assertEqual(config.__repr__(), "\nHardware config:\n\tcpu IDs : [1, 2]\n\tgpu IDs : [5]")
 
-    @patch('gromax.utils.fatal_error')
+    @patch('gromax.utils.fatalError')
     def testGpuIDFailureNotAList(self, mock_fatal):
         hw_config = HardwareConfig()
         hw_config.gpu_ids = 5
         mock_fatal.assert_called_with("gpu_ids paramater must be iterable")
 
-    @patch('gromax.utils.fatal_error')
+    @patch('gromax.utils.fatalError')
     def testGpuIDFailureNotAnInt(self, mock_fatal):
         hw_config = HardwareConfig()
         hw_config.gpu_ids = [1, 1.7584, 3]
         mock_fatal.assert_called_with("All gpu ids must be integers: {} is not an int".format(1.7584))
 
-    @patch('gromax.utils.fatal_error')
+    @patch('gromax.utils.fatalError')
     def testGpuIDFailureNotPositive(self, mock_fatal):
         hw_config = HardwareConfig()
         hw_config.gpu_ids = [1, 3, -1]
