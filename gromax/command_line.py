@@ -1,6 +1,8 @@
 import argparse
-import logging
 from typing import List, Iterable
+
+from gromax.constants import _SUPPORTED_GMX_VERSIONS
+from gromax.utils import fatalError
 
 # File constants.
 _DESCRIPTION = "Gromax is a tool to build benchmarking scripts for Gromax and analyze the results. \n" \
@@ -51,7 +53,7 @@ def _buildParser() -> argparse.ArgumentParser:
 
     generate_group = parser.add_argument_group("generate", "arguments for 'gromax generate'")
     generate_group.add_argument('--gmx_version', type=str, metavar="",
-                                help='Gromacs version - "2016", "2018", "2019", "2020", or "2021"', )
+                                help=f'Gromacs version - one of {sorted(set(_SUPPORTED_GMX_VERSIONS))}', )
     generate_group.add_argument("--run_file", type=str, help="Path to bash benchmark script to create.",
                                 default="benchmark.sh", metavar="")
     generate_group.add_argument("--gmx_executable", type=str, default="gmx", metavar="", help=(
@@ -78,33 +80,28 @@ def _buildParser() -> argparse.ArgumentParser:
     return parser
 
 
-def _failWithError(err: str):
-    logging.getLogger("gromax").error(err)
-    raise SystemExit(1)
-
-
 def _checkGenerateArgs(args: argparse.Namespace) -> None:
-    good_versions: Iterable[str] = ("2016", "2018", "2019", "2020", "2021")
-    if args.gmx_version not in good_versions:
-        _failWithError("Invalid gmx version {}, must be one of {}".format(args.gmx_version, good_versions))
+    if args.gmx_version not in _SUPPORTED_GMX_VERSIONS:
+        fatalError("Invalid gmx version {}, must be one of {}".format(args.gmx_version,
+                                                                      sorted(_SUPPORTED_GMX_VERSIONS)))
     if not args.cpu_ids and not args.num_cpus:
-        _failWithError("One of --cpu_ids or --num_cpus is required")
+        fatalError("One of --cpu_ids or --num_cpus is required")
     if args.num_cpus:
         if args.cpu_ids:
-            _failWithError("Cannot specify both --cpu_ids and --num_cpus")
+            fatalError("Cannot specify both --cpu_ids and --num_cpus")
         args.cpu_ids = ",".join([str(identifier) for identifier in range(args.num_cpus)])
     if not args.gpu_ids and not args.num_gpus:
-        _failWithError("One of --gpu_ids or --num_gpus is required")
+        fatalError("One of --gpu_ids or --num_gpus is required")
     if args.num_gpus:
         if args.gpu_ids:
-            _failWithError("Cannot specify both --gpu_ids and --num_gpus")
+            fatalError("Cannot specify both --gpu_ids and --num_gpus")
         args.gpu_ids = ",".join([str(identifier) for identifier in range(args.num_gpus)])
 
 
 def checkArgs(args: argparse.Namespace) -> None:
     good_modes: Iterable[str] = ("generate", "execute", "analyze")
     if args.mode not in good_modes:
-        _failWithError("'mode' is a required positional argument - options are 'generate', 'execute', 'analyze'")
+        fatalError("'mode' is a required positional argument - options are 'generate', 'execute', 'analyze'")
 
     if args.mode == "generate":
         _checkGenerateArgs(args)

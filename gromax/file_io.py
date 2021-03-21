@@ -140,7 +140,7 @@ def parseDirectoryStructure(directory: str) -> allDirectoryContent:
     return result
 
 
-def _maxItems(content: allDirectoryContent):
+def _maxItems(content: Dict):
     """
         Given a nested dictionary, determine the max number of items in the first subdictionary. So given,
         {

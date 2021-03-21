@@ -1,11 +1,9 @@
 import math
 
+from gromax.constants import _SUPPORTED_GMX_VERSIONS
 from gromax.hardware_config import HardwareConfig
 from copy import deepcopy
-from typing import List, Dict, Set, Any, Callable
-
-# Constants
-_SUPPORTED_VERSIONS: Set[str] = {"2016", "2018", "2019", "2020", "2021"}
+from typing import List, Dict, Any, Callable
 
 # TODO: consolidate constants like this and potentially make configurable
 _MAX_RANKS_PME_GPU = 8
@@ -166,7 +164,6 @@ def _createVersionedOptions(base_opts: ParameterSet, hw_config: HardwareConfig, 
 
         # set npme if more than one rank.
         def nPmePredicate(params: ParameterSet) -> bool:
-            # TODO verify that this is correct on all versions
             return params["pme"] == "gpu" and params["ntmpi"] > 1
         options = applyOptionIf(options, "npme", 1, nPmePredicate)
     if gmx_version >= "2019":
@@ -189,8 +186,7 @@ def _createVersionedOptions(base_opts: ParameterSet, hw_config: HardwareConfig, 
 
 
 def _versionIsValid(version: str):
-    # TODO move this more central when sanitizing user input
-    return version in _SUPPORTED_VERSIONS
+    return version in _SUPPORTED_GMX_VERSIONS
 
 
 def createRunOptionsForSingleConfig(hw_config: HardwareConfig, gmx_version: str) -> ParameterSetGroup:
@@ -221,7 +217,7 @@ def createRunOptionsForConfigGroup(configs: HardwareConfigBreakdown, gmx_version
 
     if not _versionIsValid(gmx_version):
         raise ValueError("Invalid Gromacs version: {}. Supported options are {}".format(gmx_version,
-                                                                                        _SUPPORTED_VERSIONS))
+                                                                                        _SUPPORTED_GMX_VERSIONS))
 
     # This gets us all the combinations we want, but with the wrong structure. The top level is for each partial
     # hardware config, and the second level is over the options within each subconfig.

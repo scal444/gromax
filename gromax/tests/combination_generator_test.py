@@ -30,7 +30,7 @@ class GenNtmpiOptionsTest(unittest.TestCase):
 
 class DetermineGpuTasksTest(unittest.TestCase):
     def testOneRankWithPme(self):
-        self.assertEqual(cg.determineGpuTasks(1, [0], True), "00")
+        self.assertEqual(cg.determineGpuTasks(1, [0]), "00")
 
     def testOneRankNoPme(self):
         self.assertEqual(cg.determineGpuTasks(1, [0], False), "0")
@@ -39,10 +39,10 @@ class DetermineGpuTasksTest(unittest.TestCase):
         self.assertEqual(cg.determineGpuTasks(3, [0], False), "000")
 
     def testMultiRankOneGpu(self):
-        self.assertEqual(cg.determineGpuTasks(3, [0], True), "000")
+        self.assertEqual(cg.determineGpuTasks(3, [0]), "000")
 
     def testMultiRankMultiGpu(self):
-        self.assertEqual(cg.determineGpuTasks(6, [0, 4], True), "000444")
+        self.assertEqual(cg.determineGpuTasks(6, [0, 4]), "000444")
 
 
 class ApplyOptionToAllTest(unittest.TestCase):

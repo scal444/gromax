@@ -204,7 +204,7 @@ class ParamsToStringTest(unittest.TestCase):
     @mock.patch("gromax.output._ProcessAllGroups")
     def testParamsToString(self, mock_process):
         mock_process.return_value = "mock body"
-        result = ParamsToString([[], []], "mytpr.tpr", "gmx mdrun", 3, "i", 15000, 10000)
+        result = ParamsToString([[], []], "mytpr.tpr", "gmx mdrun", 3)
         expected = "#!/bin/bash\n\ngmx='gmx mdrun'\ntpr=mytpr.tpr\nnsteps=15000\nresetstep=10000\nntrials=3\nworkdir" \
                    "=`pwd`\n\n" + "#" * 80 + "\n\nmock body\n\nexit\n"
         self.assertEqual(result, expected)

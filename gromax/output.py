@@ -4,7 +4,6 @@ from copy import deepcopy
 from gromax.combination_generator import ParameterSet, ParameterSetGroup
 from typing import Any, List
 
-# TODO make ntrials a top-level parameter
 # TODO turn group_1, group_2... to group_${group}
 
 

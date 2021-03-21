@@ -25,8 +25,6 @@ To install the current master version:
 pip install git+https://github.com/scal444/gromax
 ```
 
-TODO: Add branches as they come online
-
 ### Requirements
 - python 3.6 or greater
 
